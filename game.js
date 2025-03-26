@@ -18,7 +18,8 @@ function preload() {
 }
 
 function create() {
-    socket = new WebSocket('ws://100.20.92.101:3000');
+    // WebSocketの接続先をRender上のURLに変更
+    socket = new WebSocket('wss://game-7scn.onrender.com');  // https://で接続するため wss://
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === 'welcome') {
