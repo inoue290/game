@@ -18,7 +18,7 @@ function preload() {
 }
 
 function create() {
-    socket = new WebSocket('wss://game-7scn.onrender.com:4000');
+    socket = new WebSocket('ws://100.20.92.101:3000');
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === 'welcome') {
