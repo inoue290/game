@@ -1,8 +1,9 @@
 const WebSocket = require('ws');
 
-const port = process.env.PORT || 3000; // Renderで指定されたポートを使う
-const server = new WebSocket.Server({ port, host: '0.0.0.0' });
+// RenderのPORT環境変数を使用してポートを指定
+const port = process.env.PORT || 3000;  // ポートが指定されていなければ3000を使用
 
+const server = new WebSocket.Server({ port: port, host: '0.0.0.0' });
 let players = {};
 
 server.on('connection', (socket) => {
@@ -42,6 +43,8 @@ function broadcast(message) {
     });
 }
 
-console.log(`✅ WebSocketサーバーはポート ${port} で起動しています！`);
+console.log('✅ WebSocketサーバー起動！');
+
+
 
 
