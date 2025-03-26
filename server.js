@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-const port = process.env.PORT || 4000; // Renderで指定されたポートを使う
+const port = process.env.PORT || 3000; // Renderで指定されたポートを使う
 const server = new WebSocket.Server({ port, host: '0.0.0.0' });
 
 let players = {};
