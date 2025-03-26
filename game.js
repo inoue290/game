@@ -1,5 +1,10 @@
 let fallingObjects = [];
 
+function preload() {
+    this.load.image('player', 'assets/player.png');
+    this.load.image('fallingObject', 'assets/fallingObject.png');  // 降ってくる物体の画像をロード
+}
+
 function create() {
     // WebSocketの接続先をRender上のURLに変更
     socket = new WebSocket('wss://game-7scn.onrender.com');  // https://で接続するため wss://
@@ -38,7 +43,7 @@ function create() {
 // 降ってくる物体を生成する関数
 function spawnFallingObject() {
     const x = Phaser.Math.Between(0, window.innerWidth);
-    const fallingObject = this.physics.add.sprite(x, 0, 'player');  // プレイヤー画像を仮に使っている
+    const fallingObject = this.physics.add.sprite(x, 0, 'fallingObject');  // fallingObject.pngを使用
     fallingObject.setVelocityY(Phaser.Math.Between(100, 300));  // 降ってくる速度
 
     // 物体がプレイヤーと衝突した場合の処理
@@ -58,6 +63,7 @@ function handleCollision(fallingObject, player) {
     player.setAlpha(0);  // プレイヤーを非表示にする
     fallingObject.setAlpha(0);  // 落ちた物体も非表示
 }
+
 
 
 
