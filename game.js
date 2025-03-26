@@ -1,20 +1,8 @@
-const config = {
-    type: Phaser.AUTO,
-    width: window.innerWidth,  // スマホの画面幅に合わせる
-    height: window.innerHeight,  // スマホの画面高さに合わせる
-    physics: {
-        default: 'arcade',
-        arcade: { gravity: { y: 0 }, debug: false }
-    },
-    scene: { preload, create, update },
-};
-
-const game = new Phaser.Game(config);
-let player, otherPlayers = {};
-let cursors, socket, playerId;
+let fallingObjects = [];
 
 function preload() {
     this.load.image('player', 'assets/player.png');
+    this.load.image('fallingObject', 'assets/fallingObject.png');  // 降ってくる物体の画像をロード
 }
 
 function create() {
@@ -42,59 +30,38 @@ function create() {
     this.input.on('pointermove', (pointer) => {
         handleTouchMove(pointer);
     });
-}
 
-function update() {
-    if (!player) return;
-
-    let moved = false;
-    let x = player.x, y = player.y;
-    let speed = 2;
-
-    // PC用の矢印キーによる移動
-    if (cursors.left.isDown) { x -= speed; moved = true; }
-    if (cursors.right.isDown) { x += speed; moved = true; }
-    if (cursors.up.isDown) { y -= speed; moved = true; }
-    if (cursors.down.isDown) { y += speed; moved = true; }
-
-    // 移動した場合、位置を更新してサーバに送信
-    if (moved) {
-        player.setPosition(x, y);
-        socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
-    }
-}
-
-// 他のプレイヤーを更新
-function updateOtherPlayers(scene, playersData) {
-    Object.keys(playersData).forEach(id => {
-        if (id !== playerId) {
-            if (!otherPlayers[id]) {
-                otherPlayers[id] = scene.physics.add.sprite(playersData[id].x, playersData[id].y, 'player');
-            } else {
-                otherPlayers[id].setPosition(playersData[id].x, playersData[id].y);
-            }
-        }
-    });
-
-    // 他のプレイヤーが切断された場合
-    Object.keys(otherPlayers).forEach(id => {
-        if (!playersData[id]) {
-            otherPlayers[id].destroy();
-            delete otherPlayers[id];
-        }
+    // 上から降ってくる物体の生成
+    this.time.addEvent({
+        delay: 1000,  // 1秒ごとに物体を落とす
+        callback: spawnFallingObject,
+        callbackScope: this,
+        loop: true
     });
 }
 
-// タッチ操作でプレイヤーを移動
-function handleTouchMove(pointer) {
-    if (pointer.isDown) {
-        const x = pointer.x;
-        const y = pointer.y;
+// 降ってくる物体を生成する関数
+function spawnFallingObject() {
+    const x = Phaser.Math.Between(0, window.innerWidth);
+    const fallingObject = this.physics.add.sprite(x, 0, 'fallingObject');  // fallingObject.pngを使用
+    fallingObject.setVelocityY(Phaser.Math.Between(100, 300));  // 降ってくる速度
 
-        // プレイヤーをタッチした位置に移動
-        player.setPosition(x, y);
-        socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
-    }
+    // 物体がプレイヤーと衝突した場合の処理
+    this.physics.add.overlap(fallingObject, player, handleCollision, null, this);
+
+    fallingObjects.push(fallingObject);
+}
+
+// 衝突時の処理
+function handleCollision(fallingObject, player) {
+    console.log('Game Over: Player hit by falling object');
+    
+    // ログアウト処理やゲームの終了処理
+    socket.send(JSON.stringify({ type: 'logout', id: playerId }));
+    
+    // ゲーム終了の処理
+    player.setAlpha(0);  // プレイヤーを非表示にする
+    fallingObject.setAlpha(0);  // 落ちた物体も非表示
 }
 
 
