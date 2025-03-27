@@ -13,6 +13,7 @@ const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, attackKey, socket, playerId;
 let monsterSpeed = 50;
+let successText;
 
 function preload() {
     this.load.image('player', 'assets/player.png');
@@ -49,6 +50,10 @@ function create() {
 
     this.input.on('pointerdown', (pointer) => handleTouchMove(pointer));
     this.input.on('pointermove', (pointer) => handleTouchMove(pointer));
+
+    // 討伐成功メッセージを表示するテキスト
+    successText = this.add.text(400, 50, '', { fontSize: '32px', fill: '#00FF00' }).setOrigin(0.5);
+    successText.setVisible(false);  // 初めは非表示
 }
 
 function update() {
@@ -127,10 +132,16 @@ function onPlayerHit(player, monster) {
     if (randomChance === 1) { 
         monster.destroy();
         monster = null;
-        alert("モンスターを倒した！討伐成功！");
+
+        // 討伐成功メッセージを表示
+        successText.setText('討伐成功！');
+        successText.setVisible(true);
 
         // 新しいモンスターを即時生成
         createMonster(game.scene.scenes[0]);
+
+        // 1.5秒後にメッセージを非表示にする
+        game.scene.scenes[0].time.delayedCall(1500, () => successText.setVisible(false), [], game.scene.scenes[0]);
     }
 }
 
