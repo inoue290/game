@@ -1,7 +1,7 @@
 const config = {
     type: Phaser.AUTO,
-    width: window.innerWidth,  // スマホの画面幅に合わせる
-    height: window.innerHeight,  // スマホの画面高さに合わせる
+    width: window.innerWidth,
+    height: window.innerHeight,
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 }, debug: false }
@@ -10,31 +10,38 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-let player, otherPlayers = {};
+let player, monster, otherPlayers = {};
 let cursors, socket, playerId;
 
 function preload() {
     this.load.image('player', 'assets/player.png');
+    this.load.image('monster', 'assets/monster.png'); // モンスター画像をロード
 }
 
 function create() {
-    // WebSocketの接続先をRender上のURLに変更
-    socket = new WebSocket('wss://game-7scn.onrender.com');  // https://で接続するため wss://
+    socket = new WebSocket('wss://game-7scn.onrender.com');
+
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === 'welcome') {
             playerId = data.id;
             player = this.physics.add.sprite(400, 300, 'player');
             player.setCollideWorldBounds(true);
+
+            // モンスターをランダムな位置に配置
+            let randomX = Phaser.Math.Between(100, window.innerWidth - 100);
+            let randomY = Phaser.Math.Between(100, window.innerHeight - 100);
+            monster = this.physics.add.sprite(randomX, randomY, 'monster');
+
+            // プレイヤーとモンスターの衝突判定
+            this.physics.add.overlap(player, monster, onPlayerHit, null, this);
         } else if (data.type === 'update') {
             updateOtherPlayers(this, data.players);
         }
     };
 
-    // キーボード入力の設定（PC用）
     cursors = this.input.keyboard.createCursorKeys();
 
-    // スマホのタッチ操作
     this.input.on('pointerdown', (pointer) => {
         handleTouchMove(pointer);
     });
@@ -51,13 +58,11 @@ function update() {
     let x = player.x, y = player.y;
     let speed = 2;
 
-    // PC用の矢印キーによる移動
     if (cursors.left.isDown) { x -= speed; moved = true; }
     if (cursors.right.isDown) { x += speed; moved = true; }
     if (cursors.up.isDown) { y -= speed; moved = true; }
     if (cursors.down.isDown) { y += speed; moved = true; }
 
-    // 移動した場合、位置を更新してサーバに送信
     if (moved) {
         player.setPosition(x, y);
         socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
@@ -76,7 +81,6 @@ function updateOtherPlayers(scene, playersData) {
         }
     });
 
-    // 他のプレイヤーが切断された場合
     Object.keys(otherPlayers).forEach(id => {
         if (!playersData[id]) {
             otherPlayers[id].destroy();
@@ -90,13 +94,27 @@ function handleTouchMove(pointer) {
     if (pointer.isDown) {
         const x = pointer.x;
         const y = pointer.y;
-
-        // プレイヤーをタッチした位置に移動
         player.setPosition(x, y);
         socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
     }
 }
 
+// プレイヤーがモンスターに当たった時の処理
+function onPlayerHit() {
+    let randomChance = Phaser.Math.Between(1, 3); // 1～3のランダムな値を取得
+    if (randomChance === 1) { // 1/3の確率でログアウト
+        logoutPlayer();
+    }
+}
+
+// ログアウト処理
+function logoutPlayer() {
+    alert("モンスターにやられた！ログアウトします。");
+    socket.close(); // WebSocket を切断
+    player.destroy(); // プレイヤーを削除
+    game.destroy(true); // ゲームを終了
+    location.reload(); // ページをリロード
+}
 
 
 
