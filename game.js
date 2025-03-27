@@ -12,7 +12,7 @@ const config = {
 const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, attackKey, socket, playerId;
-let monsterSpeed = 100; 
+let monsterSpeed = 100;
 
 function preload() {
     this.load.image('player', 'assets/player.png');
@@ -32,9 +32,8 @@ function create() {
             player.setCollideWorldBounds(true);
             player.setOrigin(0.5, 0.5);
 
-            // モンスター生成（最初の位置はサーバーから受け取る）
-            monster = this.physics.add.sprite(400, 300, 'monster');
-            monster.setCollideWorldBounds(true);
+            // モンスター生成（初回はランダムな位置で生成）
+            spawnMonster();
 
             // 衝突判定を追加
             this.physics.add.collider(player, monster, onPlayerHit, null, this);  // ここでプレイヤーとモンスターの衝突を設定
@@ -55,6 +54,18 @@ function create() {
     this.input.on('pointermove', (pointer) => handleTouchMove(pointer));
 }
 
+// 新しいモンスターをランダムな位置で生成
+function spawnMonster() {
+    let x, y;
+    do {
+        x = Phaser.Math.Between(100, window.innerWidth - 100);
+        y = Phaser.Math.Between(100, window.innerHeight - 100);
+    } while (Math.abs(player.x - x) < 100 && Math.abs(player.y - y) < 100);  // プレイヤーから100px以上離れた位置に生成
+
+    monster = game.scene.scenes[0].physics.add.sprite(x, y, 'monster');
+    monster.setCollideWorldBounds(true);
+    game.scene.scenes[0].physics.add.collider(player, monster, onPlayerHit, null, game.scene.scenes[0]);  // 再び衝突判定を追加
+}
 
 function update() {
     if (!player) return;
@@ -135,9 +146,11 @@ function onPlayerHit(player, monster) {
         monster.destroy(); // モンスターを破壊
         monster = null;    // モンスターをnullに設定
         console.log("モンスターを倒した！");
+
+        // モンスターを倒した後、新しいモンスターを生成
+        spawnMonster();
     }
 }
-
 
 // ログアウト処理
 function logoutPlayer() {
@@ -147,3 +160,4 @@ function logoutPlayer() {
     game.destroy(true);
     location.reload();
 }
+
