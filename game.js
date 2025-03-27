@@ -131,26 +131,20 @@ function onPlayerHit(player, monster) {
         alert("モンスターを倒した！討伐成功！");
 
         // 3秒後に新しいモンスターを生成
-        createMonster(game.scene.scenes[0]);
+        setTimeout(() => {
+            createMonster(game.scene.scenes[0]);
+        }, 3000);
     }
 }
 
 function createMonster(scene) {
     // モンスターがいない場合のみ生成
     if (!monster) {
-        monsterTimer = scene.time.addEvent({
-            delay: 3000, 
-            callback: () => {
-                if (!monster) {
-                    let x = Phaser.Math.Between(100, window.innerWidth - 100);
-                    let y = Phaser.Math.Between(100, window.innerHeight - 100);
-                    monster = scene.physics.add.sprite(x, y, 'monster');
-                    monster.setCollideWorldBounds(true);
-                    scene.physics.add.collider(player, monster, onPlayerHit, null, scene);
-                }
-            },
-            loop: false
-        });
+        let x = Phaser.Math.Between(100, window.innerWidth - 100);
+        let y = Phaser.Math.Between(100, window.innerHeight - 100);
+        monster = scene.physics.add.sprite(x, y, 'monster');
+        monster.setCollideWorldBounds(true);
+        scene.physics.add.collider(player, monster, onPlayerHit, null, scene);
     }
 }
 
@@ -160,8 +154,8 @@ function moveMonsterRandomly(monster) {
     const moveSpeed = monsterSpeed;
 
     if (Phaser.Math.Between(1, 100) <= changeDirectionChance) {
-        const randomAngle = Phaser.Math.Between(0, 360);
-        monster.setAngle(randomAngle);
+        const randomDirection = Phaser.Math.Between(0, 1) === 0 ? 0 : 180; // 0度か180度で決定
+        monster.setAngle(randomDirection);
     }
 
     const velocityX = Math.cos(Phaser.Math.DegToRad(monster.angle)) * moveSpeed;
