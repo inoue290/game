@@ -13,7 +13,6 @@ const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, attackKey, socket, playerId;
 let monsterSpeed = 50;
-let monsterTimer;
 
 function preload() {
     this.load.image('player', 'assets/player.png');
@@ -130,10 +129,8 @@ function onPlayerHit(player, monster) {
         monster = null;
         alert("モンスターを倒した！討伐成功！");
 
-        // 3秒後に新しいモンスターを生成
-        setTimeout(() => {
-            createMonster(game.scene.scenes[0]);
-        }, 3000);
+        // 新しいモンスターを即時生成
+        createMonster(game.scene.scenes[0]);
     }
 }
 
