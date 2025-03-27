@@ -128,6 +128,7 @@ function onPlayerHit() {
         monster.destroy();
         monster = null;
         console.log("モンスターを倒した！");
+        }
 }
 
 // ログアウト処理
