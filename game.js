@@ -12,7 +12,7 @@ const config = {
 const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, attackKey, socket, playerId;
-let monsterSpeed = 100;
+let monsterSpeed = 50;
 let monsterTimer;
 
 function preload() {
@@ -79,6 +79,11 @@ function update() {
 
     if (Phaser.Input.Keyboard.JustDown(attackKey)) {
         attack();
+    }
+
+    // モンスターが存在する場合、その動きを更新
+    if (monster) {
+        moveMonsterRandomly(monster);
     }
 }
 
@@ -147,6 +152,22 @@ function createMonster(scene) {
             loop: false
         });
     }
+}
+
+// モンスターをランダムに動かす関数
+function moveMonsterRandomly(monster) {
+    const changeDirectionChance = 1; // 1フレームに1回方向を変える確率
+    const moveSpeed = monsterSpeed;
+
+    if (Phaser.Math.Between(1, 100) <= changeDirectionChance) {
+        const randomAngle = Phaser.Math.Between(0, 360);
+        monster.setAngle(randomAngle);
+    }
+
+    const velocityX = Math.cos(Phaser.Math.DegToRad(monster.angle)) * moveSpeed;
+    const velocityY = Math.sin(Phaser.Math.DegToRad(monster.angle)) * moveSpeed;
+
+    monster.setVelocity(velocityX, velocityY);
 }
 
 function logoutPlayer() {
