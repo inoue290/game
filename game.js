@@ -83,7 +83,7 @@ function update() {
 
     // モンスターが存在する場合、その動きを更新
     if (monster) {
-        moveMonsterRandomly(monster);
+        moveMonsterNaturally(monster);
     }
 }
 
@@ -148,8 +148,8 @@ function createMonster(scene) {
     }
 }
 
-// モンスターをランダムに動かす関数
-function moveMonsterRandomly(monster) {
+// モンスターを自然に動かす関数
+function moveMonsterNaturally(monster) {
     const changeDirectionChance = 1; // 1フレームに1回方向を変える確率
     const moveSpeed = monsterSpeed;
 
