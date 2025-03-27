@@ -186,10 +186,11 @@ function moveMonsterNaturally(monster) {
     const changeDirectionChance = 1; // 1フレームに1回方向を変える確率
     const moveSpeed = monsterSpeed;
 
-    // ランダムで方向を変える
+    // ランダムで方向を変える（左右のみに限定）
     if (Phaser.Math.Between(1, 100) <= changeDirectionChance) {
-        const randomDirection = Phaser.Math.Between(0, 1) === 0 ? 0 : 180; // 0度か180度で決定
-        monster.setAngle(randomDirection);
+        const moveLeft = Phaser.Math.Between(0, 1) === 0; // 50%の確率で左 or 右
+        monster.setFlipX(moveLeft); // 左なら true、右なら false
+        monster.setVelocityX(moveLeft ? -monsterSpeed : monsterSpeed); // 左なら負の速度、右なら正の速度
     }
 
     // モンスターの移動処理
