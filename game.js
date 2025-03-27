@@ -98,7 +98,6 @@ function create() {
             socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
-}
 
 // 衝突時のエフェクトを処理する関数
 function handleCollision(player, other) {
