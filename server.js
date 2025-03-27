@@ -59,3 +59,4 @@ setInterval(() => {
 }, 1000);  // 1秒ごとに更新
 
 console.log('✅ WebSocketサーバー起動！');
+
