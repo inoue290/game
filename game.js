@@ -67,6 +67,11 @@ function create() {
     });
 }
 
+let monsterMoveDirection = { x: 1, y: 0 }; // モンスターの初期方向（右方向）
+let monsterSpeed = 2; // モンスターの速度
+let changeDirectionCooldown = 1000; // 方向転換の間隔（ミリ秒）
+let lastDirectionChangeTime = 0; // 方向転換した時間
+
 function update() {
     if (!player) return;
 
@@ -75,16 +80,8 @@ function update() {
     let x = player.x, y = player.y;
 
     // プレイヤーの移動処理
-    if (cursors.left.isDown) {
-        x -= speed;
-        player.setFlipX(true); // 左に移動するときは左向き
-        moved = true;
-    }
-    if (cursors.right.isDown) {
-        x += speed;
-        player.setFlipX(false); // 右に移動するときは右向き
-        moved = true;
-    }
+    if (cursors.left.isDown) { x -= speed; player.setFlipX(true); moved = true; }
+    if (cursors.right.isDown) { x += speed; player.setFlipX(false); moved = true; }
     if (cursors.up.isDown) { y -= speed; moved = true; }
     if (cursors.down.isDown) { y += speed; moved = true; }
 
@@ -95,13 +92,29 @@ function update() {
 
     // モンスターの移動
     if (monster) {
-        // モンスターのランダムな動きを変更
-        const moveSpeed = 5;  // 速度を速くする
-        const randomDirectionX = Math.random() * moveSpeed - moveSpeed / 2;  // 横方向の動き
-        const randomDirectionY = Math.random() * moveSpeed - moveSpeed / 2;  // 縦方向の動き
+        const currentTime = Date.now();
+        const timeSinceLastChange = currentTime - lastDirectionChangeTime;
 
-        monster.x += randomDirectionX;  // X軸方向の位置を更新
-        monster.y += randomDirectionY;  // Y軸方向の位置を更新
+        // 一定時間ごとにモンスターの移動方向を変更
+        if (timeSinceLastChange > changeDirectionCooldown) {
+            // ランダムな方向に変更（±Xまたは±Yの方向）
+            if (Math.random() < 0.5) {
+                monsterMoveDirection.x = Math.random() < 0.5 ? -1 : 1; // X方向をランダム
+                monsterMoveDirection.y = 0; // Y方向は変更しない
+            } else {
+                monsterMoveDirection.y = Math.random() < 0.5 ? -1 : 1; // Y方向をランダム
+                monsterMoveDirection.x = 0; // X方向は変更しない
+            }
+            lastDirectionChangeTime = currentTime; // 方向変更時刻を更新
+        }
+
+        // モンスターを移動
+        monster.x += monsterMoveDirection.x * monsterSpeed;
+        monster.y += monsterMoveDirection.y * monsterSpeed;
+
+        // 画面外に出ないようにモンスターの位置を制限
+        monster.x = Phaser.Math.Clamp(monster.x, 0, window.innerWidth);
+        monster.y = Phaser.Math.Clamp(monster.y, 0, window.innerHeight);
 
         // モンスターの位置をサーバーに送信
         socket.send(JSON.stringify({
@@ -111,6 +124,7 @@ function update() {
         }));
     }
 }
+
 
 
 // 他のプレイヤーの位置更新
