@@ -16,38 +16,47 @@ let monsterSpeed = 50;
 let successText, attackEffect;
 
 function preload() {
+    // 画像をロード
     this.load.image('player', 'assets/player.png');
     this.load.image('monster', 'assets/monster.png');
     this.load.image('attack', 'assets/attack.png');
 }
 
 function create() {
+    // WebSocket接続
     socket = new WebSocket('wss://game-7scn.onrender.com');
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
+        // プレイヤーが初めて接続した時の処理
         if (data.type === 'welcome') {
             playerId = data.id;
             player = this.physics.add.sprite(400, 300, 'player');
             player.setCollideWorldBounds(true);
             player.setOrigin(0.5, 0.5);
 
-            createMonster(this);  // 最初のモンスター生成
+            // 最初のモンスター生成
+            createMonster(this);
 
+            // プレイヤーとモンスターの衝突判定
             this.physics.add.collider(player, monster, onPlayerHit, null, this);
         } else if (data.type === 'monsterPosition') {
+            // 他のプレイヤーのモンスターの位置更新
             if (monster) {
                 monster.setPosition(data.x, data.y);
             }
         } else if (data.type === 'update') {
+            // 他のプレイヤーの位置更新
             updateOtherPlayers(this, data.players);
         }
     };
 
+    // キーボードの入力を取得
     cursors = this.input.keyboard.createCursorKeys();
-    attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE); 
+    attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+    // タッチ移動の処理
     this.input.on('pointerdown', (pointer) => handleTouchMove(pointer));
     this.input.on('pointermove', (pointer) => handleTouchMove(pointer));
 
@@ -57,51 +66,59 @@ function create() {
 }
 
 function update() {
+    // プレイヤーがいなければ終了
     if (!player) return;
 
     let moved = false;
     let x = player.x, y = player.y;
     let speed = 3;
 
+    // プレイヤーの移動処理
     if (cursors.left.isDown) {
-        x -= speed; 
+        x -= speed;
         moved = true;
-        player.setFlipX(true);
+        player.setFlipX(true); // 左向き
     }
     if (cursors.right.isDown) {
-        x += speed; 
+        x += speed;
         moved = true;
-        player.setFlipX(false);
+        player.setFlipX(false); // 右向き
     }
     if (cursors.up.isDown) { y -= speed; moved = true; }
     if (cursors.down.isDown) { y += speed; moved = true; }
 
+    // プレイヤーが移動した場合
     if (moved) {
         player.setPosition(x, y);
         socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
     }
 
+    // 攻撃キーが押された時の処理
     if (Phaser.Input.Keyboard.JustDown(attackKey)) {
         attack();
     }
 
-    // モンスターが存在する場合、その動きを更新
+    // モンスターが存在する場合、その動きの更新
     if (monster) {
         moveMonsterNaturally(monster);
     }
 }
 
 function updateOtherPlayers(scene, playersData) {
+    // 他のプレイヤーの情報を更新
     Object.keys(playersData).forEach(id => {
         if (id !== playerId) {
+            // 新しいプレイヤーを追加
             if (!otherPlayers[id]) {
                 otherPlayers[id] = scene.physics.add.sprite(playersData[id].x, playersData[id].y, 'player');
             } else {
+                // 既存のプレイヤー位置を更新
                 otherPlayers[id].setPosition(playersData[id].x, playersData[id].y);
             }
         }
     });
 
+    // もういないプレイヤーを削除
     Object.keys(otherPlayers).forEach(id => {
         if (!playersData[id]) {
             otherPlayers[id].destroy();
@@ -111,6 +128,7 @@ function updateOtherPlayers(scene, playersData) {
 }
 
 function handleTouchMove(pointer) {
+    // タッチでプレイヤーの位置を更新
     if (pointer.isDown) {
         const x = pointer.x;
         const y = pointer.y;
@@ -120,20 +138,22 @@ function handleTouchMove(pointer) {
 }
 
 function onPlayerHit(player, monster) {
+    // モンスターに当たった場合の処理
     if (!monster) return;
 
     // 攻撃エフェクトの表示
     attackEffect = game.scene.scenes[0].add.image(monster.x, monster.y, 'attack');
     attackEffect.setScale(0.5);
-    attackEffect.setDepth(1); 
+    attackEffect.setDepth(1);
 
-    // 攻撃エフェクトを0.2秒後に削除
+    // 0.2秒後に攻撃エフェクトを削除
     game.scene.scenes[0].time.delayedCall(200, () => {
         attackEffect.destroy();
     }, [], game.scene.scenes[0]);
 
+    // モンスター討伐判定
     let randomChance = Phaser.Math.Between(1, 10);
-    if (randomChance === 1) { 
+    if (randomChance === 1) {
         // モンスターを削除
         monster.destroy();
         monster = null;
@@ -142,11 +162,11 @@ function onPlayerHit(player, monster) {
         successText.setText('討伐成功！');
         successText.setVisible(true);
 
-        // 新しいモンスターを即時生成
-        createMonster(game.scene.scenes[0]);
-
-        // 1.5秒後にメッセージを非表示にする
+        // 1.5秒後にメッセージを非表示
         game.scene.scenes[0].time.delayedCall(1500, () => successText.setVisible(false), [], game.scene.scenes[0]);
+
+        // 新しいモンスターを生成
+        createMonster(game.scene.scenes[0]);
     }
 }
 
@@ -161,16 +181,18 @@ function createMonster(scene) {
     }
 }
 
-// モンスターを自然に動かす関数
 function moveMonsterNaturally(monster) {
+    // モンスターが自然に動く処理
     const changeDirectionChance = 1; // 1フレームに1回方向を変える確率
     const moveSpeed = monsterSpeed;
 
+    // ランダムで方向を変える
     if (Phaser.Math.Between(1, 100) <= changeDirectionChance) {
         const randomDirection = Phaser.Math.Between(0, 1) === 0 ? 0 : 180; // 0度か180度で決定
         monster.setAngle(randomDirection);
     }
 
+    // モンスターの移動処理
     const velocityX = Math.cos(Phaser.Math.DegToRad(monster.angle)) * moveSpeed;
     const velocityY = Math.sin(Phaser.Math.DegToRad(monster.angle)) * moveSpeed;
 
@@ -178,9 +200,10 @@ function moveMonsterNaturally(monster) {
 }
 
 function logoutPlayer() {
+    // ゲームを終了する処理
     alert("モンスターにやられた！ログアウトします。");
-    socket.close(); 
-    player.destroy(); 
-    game.destroy(true);
-    location.reload();
+    socket.close();  // WebSocket接続を閉じる
+    player.destroy();  // プレイヤーキャラクターを削除
+    game.destroy(true);  // ゲームの状態を全て削除
+    location.reload();  // ページをリロードしてゲームを再起動
 }
