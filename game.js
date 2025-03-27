@@ -8,72 +8,102 @@ const config = {
     },
     physics: {
         default: 'arcade',
-        arcade: { gravity: { y: 0 }, debug: false }
+        arcade: { gravity: { y: 0 }, debug: false }  // 重力なし、デバッグモード無効
     },
-    scene: { preload, create, update },
+    scene: { preload, create, update },  // ゲームシーンの設定（読み込み、作成、更新）
 };
 
-const game = new Phaser.Game(config);
+const game = new Phaser.Game(config);  // ゲームの初期化
 let player, monster;
-let players = {}; // 複数プレイヤー管理
+let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
+let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
 
+// リソースの読み込み
 function preload() {
-    this.load.image('player', 'assets/player.png');
-    this.load.image('monster', 'assets/monster.png');
+    this.load.image('player', 'assets/player.png');  // プレイヤー画像の読み込み
+    this.load.image('monster', 'assets/monster.png');  // モンスター画像の読み込み
+    this.load.image('attack', 'assets/attack.png');  // 攻撃エフェクト画像の読み込み
 }
 
+// ゲームシーンの作成処理
 function create() {
-    socket = new WebSocket('wss://game-7scn.onrender.com'); // サーバーURLを指定
-    // WebSocketイベント処理
+    socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
+
+    // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
         if (data.type === 'welcome') {
-            // プレイヤーのIDがサーバーから送られてきた場合
+            // サーバーからプレイヤーIDが送られてきた場合
             playerId = data.id;
             player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
-            player.setCollideWorldBounds(true);
-            players[playerId] = player;
+            player.setCollideWorldBounds(true);  // 画面外に出ないように設定
+            player.setBounce(1);  // 画面の端に当たったときの反発を有効にする
+            players[playerId] = player;  // プレイヤーオブジェクトを保存
+
+            // プレイヤー同士、プレイヤーとモンスターの衝突判定を設定
+            this.physics.add.collider(player, monster, handleCollision, null, this);
+            for (let id in players) {
+                if (id !== playerId) {
+                    this.physics.add.collider(player, players[id], handleCollision, null, this);
+                }
+            }
 
         } else if (data.type === 'update') {
-            // 他のプレイヤーの位置更新
+            // 他のプレイヤーの位置を更新
             updatePlayers(this, data.players);
 
         } else if (data.type === 'monsterPosition') {
             // モンスターの位置更新
             if (!monster) {
-                // モンスターがまだ作成されていない場合
                 monster = this.physics.add.sprite(data.x, data.y, 'monster');
-                monster.setCollideWorldBounds(true); // モンスターが画面外に出ないように
+                monster.setCollideWorldBounds(true);  // モンスターが画面外に出ないように
+                monster.setBounce(1);  // モンスターの反発を有効にする
+                // プレイヤーとモンスターの衝突判定
+                this.physics.add.collider(player, monster, handleCollision, null, this);
             } else {
-                // 既にモンスターが作成されている場合
-                monster.setPosition(data.x, data.y); // モンスターの位置を更新
+                monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
         }
     };
 
-    // プレイヤーの動き用
+    // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
 
-    // スマホでの操作用タッチイベント
+    // スマホ操作用タッチイベント（プレイヤー移動）
     this.input.on('pointermove', (pointer) => {
         if (player) {
             const x = pointer.x;
             const y = pointer.y;
-            player.setPosition(x, y);
-            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
+            player.setPosition(x, y);  // プレイヤーの位置をタッチ位置に設定
+            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
 }
 
-let monsterMoveDirection = { x: 1, y: 0 }; // モンスターの初期方向（右方向）
-let monsterSpeed = 2; // モンスターの速度
-let changeDirectionCooldown = 1000; // 方向転換の間隔（ミリ秒）
-let lastDirectionChangeTime = 0; // 方向転換した時間
+// 衝突時のエフェクトを処理する関数
+function handleCollision(player, other) {
+    // 衝突した場合、攻撃エフェクトを表示
+    let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
+    attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
+    attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
+
+    // 0.5秒後にエフェクトを非表示にし、削除
+    this.time.delayedCall(attackEffectDuration, () => {
+        attackEffect.setAlpha(0);  // 透明にする
+        attackEffect.destroy();  // エフェクトを削除
+    });
+}
+
+// モンスターのランダムな動きとサーバーへの送信
+let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
+let monsterSpeed = 2;  // モンスターの移動速度
+let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
+let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
 
 function update() {
-    if (!player) return;
+    if (!player) return;  // プレイヤーがいない場合は何も処理しない
 
     let speed = 3;
     let moved = false;
@@ -85,6 +115,7 @@ function update() {
     if (cursors.up.isDown) { y -= speed; moved = true; }
     if (cursors.down.isDown) { y += speed; moved = true; }
 
+    // プレイヤーが移動した場合、位置を更新しサーバーに送信
     if (moved) {
         player.setPosition(x, y);
         socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
@@ -97,15 +128,14 @@ function update() {
 
         // 一定時間ごとにモンスターの移動方向を変更
         if (timeSinceLastChange > changeDirectionCooldown) {
-            // ランダムな方向に変更（±Xまたは±Yの方向）
             if (Math.random() < 0.5) {
-                monsterMoveDirection.x = Math.random() < 0.5 ? -1 : 1; // X方向をランダム
-                monsterMoveDirection.y = 0; // Y方向は変更しない
+                monsterMoveDirection.x = Math.random() < 0.5 ? -1 : 1;  // X方向をランダム
+                monsterMoveDirection.y = 0;  // Y方向は変更しない
             } else {
-                monsterMoveDirection.y = Math.random() < 0.5 ? -1 : 1; // Y方向をランダム
-                monsterMoveDirection.x = 0; // X方向は変更しない
+                monsterMoveDirection.y = Math.random() < 0.5 ? -1 : 1;  // Y方向をランダム
+                monsterMoveDirection.x = 0;  // X方向は変更しない
             }
-            lastDirectionChangeTime = currentTime; // 方向変更時刻を更新
+            lastDirectionChangeTime = currentTime;  // 最後に方向を変更した時間を更新
         }
 
         // モンスターを移動
@@ -125,21 +155,22 @@ function update() {
     }
 }
 
-
-
-// 他のプレイヤーの位置更新
+// 他のプレイヤーの位置を更新する関数
 function updatePlayers(scene, playersData) {
+    // 新しいプレイヤーを追加
     for (let id in playersData) {
         if (id !== playerId) {
             if (!players[id]) {
                 players[id] = scene.physics.add.sprite(playersData[id].x, playersData[id].y, 'player');
+                // プレイヤーとモンスターの衝突判定を設定
+                scene.physics.add.collider(players[id], monster, handleCollision, null, scene);
             } else {
                 players[id].setPosition(playersData[id].x, playersData[id].y);
             }
         }
     }
 
-    // 消えたプレイヤーを削除
+    // 既存のプレイヤーが削除されている場合は削除
     for (let id in players) {
         if (!playersData[id]) {
             players[id].destroy();
