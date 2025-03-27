@@ -12,6 +12,7 @@ const config = {
 const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, socket, playerId;
+let monsterSpeed = 100; // モンスターの移動速度
 
 function preload() {
     this.load.image('player', 'assets/player.png');
@@ -32,9 +33,12 @@ function create() {
             let randomX = Phaser.Math.Between(100, window.innerWidth - 100);
             let randomY = Phaser.Math.Between(100, window.innerHeight - 100);
             monster = this.physics.add.sprite(randomX, randomY, 'monster');
-
-            // プレイヤーとモンスターの衝突判定
+            monster.setCollideWorldBounds(true); // 画面の端で止まる
             this.physics.add.overlap(player, monster, onPlayerHit, null, this);
+
+            // モンスターをランダムに動かす
+            changeMonsterDirection();
+            this.time.addEvent({ delay: 2000, callback: changeMonsterDirection, callbackScope: this, loop: true });
         } else if (data.type === 'update') {
             updateOtherPlayers(this, data.players);
         }
@@ -101,8 +105,8 @@ function handleTouchMove(pointer) {
 
 // プレイヤーがモンスターに当たった時の処理
 function onPlayerHit() {
-    let randomChance = Phaser.Math.Between(1, 3); // 1～3のランダムな値を取得
-    if (randomChance === 1) { // 1/3の確率でログアウト
+    let randomChance = Phaser.Math.Between(1, 10); // 1～10のランダムな値を取得
+    if (randomChance === 1) { // 1/10の確率でログアウト
         logoutPlayer();
     }
 }
@@ -115,6 +119,18 @@ function logoutPlayer() {
     game.destroy(true); // ゲームを終了
     location.reload(); // ページをリロード
 }
+
+// モンスターの方向をランダムに変える
+function changeMonsterDirection() {
+    if (!monster) return;
+
+    let randomAngle = Phaser.Math.Between(0, 360); // 0～360度のランダムな方向
+    let velocityX = Math.cos(randomAngle) * monsterSpeed;
+    let velocityY = Math.sin(randomAngle) * monsterSpeed;
+
+    monster.setVelocity(velocityX, velocityY);
+}
+
 
 
 
