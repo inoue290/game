@@ -95,9 +95,13 @@ function update() {
 
     // モンスターの移動
     if (monster) {
-        // モンスターの左右ランダムな動き
-        monster.x += Math.random() * 10 - 5;  // 左右に移動（速さを上げるために値を調整）
-        monster.y += Math.random() * 10 - 5;  // 上下に移動（モンスターのランダムな動き）
+        // モンスターのランダムな動きを変更
+        const moveSpeed = 5;  // 速度を速くする
+        const randomDirectionX = Math.random() * moveSpeed - moveSpeed / 2;  // 横方向の動き
+        const randomDirectionY = Math.random() * moveSpeed - moveSpeed / 2;  // 縦方向の動き
+
+        monster.x += randomDirectionX;  // X軸方向の位置を更新
+        monster.y += randomDirectionY;  // Y軸方向の位置を更新
 
         // モンスターの位置をサーバーに送信
         socket.send(JSON.stringify({
@@ -107,6 +111,7 @@ function update() {
         }));
     }
 }
+
 
 // 他のプレイヤーの位置更新
 function updatePlayers(scene, playersData) {
