@@ -2,6 +2,10 @@ const config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
     height: window.innerHeight,
+    scale: {
+        mode: Phaser.Scale.FIT,  // ゲーム画面を画面に合わせてフィット
+        autoCenter: Phaser.Scale.CENTER_BOTH  // 画面中央に配置
+    },
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 }, debug: false }
