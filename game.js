@@ -38,7 +38,10 @@ function create() {
 
         } else if (data.type === 'monsterPosition') {
             // モンスターの位置更新
-            if (monster) {
+            if (!monster) {
+                monster = this.physics.add.sprite(data.x, data.y, 'monster');
+                monster.setCollideWorldBounds(true); // モンスターが画面外に出ないように
+            } else {
                 monster.setPosition(data.x, data.y);
             }
         }
@@ -47,18 +50,14 @@ function create() {
     // プレイヤーの動き用
     cursors = this.input.keyboard.createCursorKeys();
 
-    // タッチイベントやマウスでプレイヤーを操作できるようにする
+    // スマホでの操作用タッチイベント
     this.input.on('pointermove', (pointer) => {
-        if (pointer.isDown) {
-            player.setPosition(pointer.x, pointer.y);
-            socket.send(JSON.stringify({ type: 'move', id: playerId, x: pointer.x, y: pointer.y }));
+        if (player) {
+            const x = pointer.x;
+            const y = pointer.y;
+            player.setPosition(x, y);
+            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
         }
-    });
-
-    // スマホでもタッチ移動が可能
-    this.input.on('pointerdown', (pointer) => {
-        player.setPosition(pointer.x, pointer.y);
-        socket.send(JSON.stringify({ type: 'move', id: playerId, x: pointer.x, y: pointer.y }));
     });
 }
 
@@ -69,7 +68,7 @@ function update() {
     let moved = false;
     let x = player.x, y = player.y;
 
-    // プレイヤーの移動処理 (キーボード操作)
+    // プレイヤーの移動処理
     if (cursors.left.isDown) { x -= speed; moved = true; }
     if (cursors.right.isDown) { x += speed; moved = true; }
     if (cursors.up.isDown) { y -= speed; moved = true; }
