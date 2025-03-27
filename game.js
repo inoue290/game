@@ -37,7 +37,7 @@ function create() {
             monster.setCollideWorldBounds(true);
 
             // 衝突判定を追加
-            this.physics.add.collider(player, monster, onPlayerHit, null, this);
+            this.physics.add.collider(player, monster, onPlayerHit, null, this);  // ここでプレイヤーとモンスターの衝突を設定
         } else if (data.type === 'monsterPosition') {
             // モンスターの位置をサーバーから受け取った位置に更新
             if (monster) {
@@ -119,21 +119,25 @@ function handleTouchMove(pointer) {
 }
 
 // プレイヤーがモンスターに当たった時の処理
-function onPlayerHit() {
+function onPlayerHit(player, monster) {
     if (!monster) return;
 
     // 攻撃エフェクトを表示
     let attackEffect = game.scene.scenes[0].add.image(monster.x, monster.y, 'attack');
     attackEffect.setScale(0.5);
+    attackEffect.setDepth(1);  // エフェクトをプレイヤーとモンスターの前に表示
+
+    // エフェクトを200ms後に消す
     game.scene.scenes[0].time.delayedCall(200, () => attackEffect.destroy(), [], game.scene.scenes[0]);
 
     let randomChance = Phaser.Math.Between(1, 10); // 1～10のランダムな値を取得
     if (randomChance === 1) { // 1/10の確率でモンスターを倒す
-        monster.destroy();
-        monster = null;
+        monster.destroy(); // モンスターを破壊
+        monster = null;    // モンスターをnullに設定
         console.log("モンスターを倒した！");
-        }
+    }
 }
+
 
 // ログアウト処理
 function logoutPlayer() {
