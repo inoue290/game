@@ -23,29 +23,32 @@ function create() {
     socket = new WebSocket('wss://game-7scn.onrender.com'); // サーバーURLを指定
     // WebSocketイベント処理
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+    const data = JSON.parse(event.data);
 
-        if (data.type === 'welcome') {
-            // プレイヤーのIDがサーバーから送られてきた場合
-            playerId = data.id;
-            player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
-            player.setCollideWorldBounds(true);
-            players[playerId] = player;
+    if (data.type === 'welcome') {
+        // プレイヤーのIDがサーバーから送られてきた場合
+        playerId = data.id;
+        player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
+        player.setCollideWorldBounds(true);
+        players[playerId] = player;
 
-        } else if (data.type === 'update') {
-            // 他のプレイヤーの位置更新
-            updatePlayers(this, data.players);
+    } else if (data.type === 'update') {
+        // 他のプレイヤーの位置更新
+        updatePlayers(this, data.players);
 
-        } else if (data.type === 'monsterPosition') {
-            // モンスターの位置更新
-            if (!monster) {
-                monster = this.physics.add.sprite(data.x, data.y, 'monster');
-                monster.setCollideWorldBounds(true); // モンスターが画面外に出ないように
-            } else {
-                monster.setPosition(data.x, data.y);
-            }
+    } else if (data.type === 'monsterPosition') {
+        // モンスターの位置更新
+        if (!monster) {
+            // モンスターがまだ作成されていない場合
+            monster = this.physics.add.sprite(data.x, data.y, 'monster');
+            monster.setCollideWorldBounds(true); // モンスターが画面外に出ないように
+        } else {
+            // 既にモンスターが作成されている場合
+            monster.setPosition(data.x, data.y); // モンスターの位置を更新
         }
-    };
+    }
+};
+
 
     // プレイヤーの動き用
     cursors = this.input.keyboard.createCursorKeys();
