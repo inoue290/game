@@ -35,6 +35,9 @@ function create() {
             // モンスター生成（最初の位置はサーバーから受け取る）
             monster = this.physics.add.sprite(400, 300, 'monster');
             monster.setCollideWorldBounds(true);
+
+            // 衝突判定を追加
+            this.physics.add.collider(player, monster, onPlayerHit, null, this);
         } else if (data.type === 'monsterPosition') {
             // モンスターの位置をサーバーから受け取った位置に更新
             if (monster) {
@@ -51,6 +54,7 @@ function create() {
     this.input.on('pointerdown', (pointer) => handleTouchMove(pointer));
     this.input.on('pointermove', (pointer) => handleTouchMove(pointer));
 }
+
 
 function update() {
     if (!player) return;
