@@ -9,28 +9,6 @@
     <script>
         console.log(window.rexuiplugin);  // プラグインが読み込まれているか確認
     </script>
-    <script>
-       // ランダムな20桁の英数字を生成する関数
-        function generateRandomString(length) {
-            const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let randomString = '';
-            for (let i = 0; i < length; i++) {
-                const randomIndex = Math.floor(Math.random() * charset.length);
-                randomString += charset[randomIndex];
-            }
-            return randomString;
-        }
-        
-        // ランダムな20桁の英数字を生成
-        const randomUserId = generateRandomString(20);
-        
-        // URLに追加
-        const urlWithUser = window.location.href + '?user=' + randomUserId;
-        console.log(urlWithUser);  // 新しいURLを確認
-        
-        // 必要に応じて、URLをリダイレクトすることもできます
-        // window.location.href = urlWithUser;
-    </script>
 </head>
 <body>
     <script src="game.js"></script>
