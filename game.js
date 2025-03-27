@@ -20,8 +20,7 @@ function preload() {
 }
 
 function create() {
-    socket = new WebSocket('wss://your-websocket-server-url'); // サーバーのURLを指定
-
+    socket = new WebSocket('wss://game-7scn.onrender.com'); // サーバーURLを指定
     // WebSocketイベント処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
