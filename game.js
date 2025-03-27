@@ -21,6 +21,7 @@ function preload() {
 
 function create() {
     socket = new WebSocket('wss://game-7scn.onrender.com'); // サーバーURLを指定
+
     // WebSocketイベント処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -28,9 +29,12 @@ function create() {
         if (data.type === 'welcome') {
             // プレイヤーのIDがサーバーから送られてきた場合
             playerId = data.id;
-            player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
-            player.setCollideWorldBounds(true);
-            players[playerId] = player;
+            // プレイヤーがまだ作成されていなければ作成する
+            if (!player) {
+                player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
+                player.setCollideWorldBounds(true);
+                players[playerId] = player;
+            }
 
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置更新
@@ -49,7 +53,7 @@ function create() {
 }
 
 function update() {
-    if (!player) return;
+    if (!player) return; // プレイヤーが存在しない場合、更新しない
 
     let speed = 3;
     let moved = false;
