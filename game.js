@@ -138,4 +138,3 @@ function logoutPlayer() {
     game.destroy(true);
     location.reload();
 }
-
