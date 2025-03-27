@@ -12,7 +12,8 @@ const config = {
 const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, attackKey, socket, playerId;
-let monsterSpeed = 100;
+let monsterSpeed = 100; 
+let monsterTimer;
 
 function preload() {
     this.load.image('player', 'assets/player.png');
@@ -32,8 +33,8 @@ function create() {
             player.setCollideWorldBounds(true);
             player.setOrigin(0.5, 0.5);
 
-            // モンスター生成（初回はランダムな位置で生成）
-            spawnMonster();
+            // 初期モンスターを生成
+            createMonster(this);
 
             // 衝突判定を追加
             this.physics.add.collider(player, monster, onPlayerHit, null, this);  // ここでプレイヤーとモンスターの衝突を設定
@@ -52,19 +53,6 @@ function create() {
 
     this.input.on('pointerdown', (pointer) => handleTouchMove(pointer));
     this.input.on('pointermove', (pointer) => handleTouchMove(pointer));
-}
-
-// 新しいモンスターをランダムな位置で生成
-function spawnMonster() {
-    let x, y;
-    do {
-        x = Phaser.Math.Between(100, window.innerWidth - 100);
-        y = Phaser.Math.Between(100, window.innerHeight - 100);
-    } while (Math.abs(player.x - x) < 100 && Math.abs(player.y - y) < 100);  // プレイヤーから100px以上離れた位置に生成
-
-    monster = game.scene.scenes[0].physics.add.sprite(x, y, 'monster');
-    monster.setCollideWorldBounds(true);
-    game.scene.scenes[0].physics.add.collider(player, monster, onPlayerHit, null, game.scene.scenes[0]);  // 再び衝突判定を追加
 }
 
 function update() {
@@ -145,11 +133,30 @@ function onPlayerHit(player, monster) {
     if (randomChance === 1) { // 1/10の確率でモンスターを倒す
         monster.destroy(); // モンスターを破壊
         monster = null;    // モンスターをnullに設定
-        console.log("モンスターを倒した！");
+        alert("モンスターを倒した！討伐成功！");
 
-        // モンスターを倒した後、新しいモンスターを生成
-        spawnMonster();
+        // 新しいモンスターを生成
+        createMonster(game.scene.scenes[0]);
     }
+}
+
+// モンスターを生成する関数
+function createMonster(scene) {
+    // 3秒後に新しいモンスターを生成
+    monsterTimer = scene.time.addEvent({
+        delay: 3000,  // 3秒後
+        callback: () => {
+            if (!monster) {
+                // モンスターの位置をランダムに決定
+                let x = Phaser.Math.Between(100, window.innerWidth - 100);
+                let y = Phaser.Math.Between(100, window.innerHeight - 100);
+                monster = scene.physics.add.sprite(x, y, 'monster');
+                monster.setCollideWorldBounds(true);
+                scene.physics.add.collider(player, monster, onPlayerHit, null, scene);  // 衝突判定を追加
+            }
+        },
+        loop: false  // 1回だけ実行
+    });
 }
 
 // ログアウト処理
@@ -160,4 +167,3 @@ function logoutPlayer() {
     game.destroy(true);
     location.reload();
 }
-
