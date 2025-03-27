@@ -19,15 +19,18 @@ let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
 
-// リソースの読み込み
 function preload() {
+    this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
     this.load.image('player', 'assets/player.png');  // プレイヤー画像の読み込み
     this.load.image('monster', 'assets/monster.png');  // モンスター画像の読み込み
     this.load.image('attack', 'assets/attack.png');  // 攻撃エフェクト画像の読み込み
 }
 
-// ゲームシーンの作成処理
+
 function create() {
+    // 背景画像の設定
+    this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
+
     socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
 
     // WebSocketからのメッセージ処理
@@ -67,6 +70,21 @@ function create() {
             }
         }
     };
+
+    // プレイヤーの入力（移動）処理
+    cursors = this.input.keyboard.createCursorKeys();
+
+    // スマホ操作用タッチイベント（プレイヤー移動）
+    this.input.on('pointermove', (pointer) => {
+        if (player) {
+            const x = pointer.x;
+            const y = pointer.y;
+            player.setPosition(x, y);  // プレイヤーの位置をタッチ位置に設定
+            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
+        }
+    });
+}
+
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
