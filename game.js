@@ -26,7 +26,6 @@ function preload() {
     this.load.image('attack', 'assets/attack.png');  // 攻撃エフェクト画像の読み込み
 }
 
-
 function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
@@ -84,20 +83,6 @@ function create() {
         }
     });
 }
-
-
-    // プレイヤーの入力（移動）処理
-    cursors = this.input.keyboard.createCursorKeys();
-
-    // スマホ操作用タッチイベント（プレイヤー移動）
-    this.input.on('pointermove', (pointer) => {
-        if (player) {
-            const x = pointer.x;
-            const y = pointer.y;
-            player.setPosition(x, y);  // プレイヤーの位置をタッチ位置に設定
-            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
-        }
-    });
 
 // 衝突時のエフェクトを処理する関数
 function handleCollision(player, other) {
