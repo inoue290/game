@@ -21,7 +21,6 @@ function preload() {
 
 function create() {
     socket = new WebSocket('wss://game-7scn.onrender.com'); // サーバーURLを指定
-
     // WebSocketイベント処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -29,12 +28,9 @@ function create() {
         if (data.type === 'welcome') {
             // プレイヤーのIDがサーバーから送られてきた場合
             playerId = data.id;
-            // プレイヤーがまだ作成されていなければ作成する
-            if (!player) {
-                player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
-                player.setCollideWorldBounds(true);
-                players[playerId] = player;
-            }
+            player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
+            player.setCollideWorldBounds(true);
+            players[playerId] = player;
 
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置更新
@@ -42,9 +38,7 @@ function create() {
 
         } else if (data.type === 'monsterPosition') {
             // モンスターの位置更新
-            if (!monster) {
-                monster = this.physics.add.sprite(data.x, data.y, 'monster');
-            } else {
+            if (monster) {
                 monster.setPosition(data.x, data.y);
             }
         }
@@ -52,16 +46,30 @@ function create() {
 
     // プレイヤーの動き用
     cursors = this.input.keyboard.createCursorKeys();
+
+    // タッチイベントやマウスでプレイヤーを操作できるようにする
+    this.input.on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+            player.setPosition(pointer.x, pointer.y);
+            socket.send(JSON.stringify({ type: 'move', id: playerId, x: pointer.x, y: pointer.y }));
+        }
+    });
+
+    // スマホでもタッチ移動が可能
+    this.input.on('pointerdown', (pointer) => {
+        player.setPosition(pointer.x, pointer.y);
+        socket.send(JSON.stringify({ type: 'move', id: playerId, x: pointer.x, y: pointer.y }));
+    });
 }
 
 function update() {
-    if (!player) return; // プレイヤーが存在しない場合、更新しない
+    if (!player) return;
 
     let speed = 3;
     let moved = false;
     let x = player.x, y = player.y;
 
-    // プレイヤーの移動処理
+    // プレイヤーの移動処理 (キーボード操作)
     if (cursors.left.isDown) { x -= speed; moved = true; }
     if (cursors.right.isDown) { x += speed; moved = true; }
     if (cursors.up.isDown) { y -= speed; moved = true; }
@@ -93,4 +101,3 @@ function updatePlayers(scene, playersData) {
         }
     }
 }
-
