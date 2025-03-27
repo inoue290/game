@@ -25,24 +25,21 @@ function create() {
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
+
         if (data.type === 'welcome') {
             playerId = data.id;
             player = this.physics.add.sprite(400, 300, 'player');
             player.setCollideWorldBounds(true);
             player.setOrigin(0.5, 0.5);
 
-            // モンスター生成
-            let randomX = Phaser.Math.Between(100, window.innerWidth - 100);
-            let randomY = Phaser.Math.Between(100, window.innerHeight - 100);
-            monster = this.physics.add.sprite(randomX, randomY, 'monster');
+            // モンスター生成（最初の位置はサーバーから受け取る）
+            monster = this.physics.add.sprite(400, 300, 'monster');
             monster.setCollideWorldBounds(true);
-            
-            // モンスターとの衝突判定
-            this.physics.add.overlap(player, monster, onPlayerHit, null, this);
-
-            // モンスターをランダム移動
-            changeMonsterDirection();
-            this.time.addEvent({ delay: 2000, callback: changeMonsterDirection, callbackScope: this, loop: true });
+        } else if (data.type === 'monsterPosition') {
+            // モンスターの位置をサーバーから受け取った位置に更新
+            if (monster) {
+                monster.setPosition(data.x, data.y);
+            }
         } else if (data.type === 'update') {
             updateOtherPlayers(this, data.players);
         }
@@ -117,22 +114,6 @@ function handleTouchMove(pointer) {
     }
 }
 
-// モンスターの方向をランダムに変える
-function changeMonsterDirection() {
-    if (!monster) return;
-
-    let randomAngle = Phaser.Math.Between(0, 360);
-    let velocityX = Math.cos(randomAngle) * monsterSpeed;
-    let velocityY = Math.sin(randomAngle) * monsterSpeed;
-
-    monster.setVelocity(velocityX, velocityY);
-    if (velocityX < 0) {
-        monster.setFlipX(true); // 左向き
-    } else {
-        monster.setFlipX(false); // 右向き
-    }
-}
-
 // プレイヤーがモンスターに当たった時の処理
 function onPlayerHit() {
     if (!monster) return;
@@ -147,10 +128,7 @@ function onPlayerHit() {
         monster.destroy();
         monster = null;
         console.log("モンスターを倒した！");
-    }
 }
-
-
 
 // ログアウト処理
 function logoutPlayer() {
