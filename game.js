@@ -133,29 +133,24 @@ function changeMonsterDirection() {
     }
 }
 
-// モンスターを倒せるようにする
-function attack() {
+// プレイヤーがモンスターに当たった時の処理
+function onPlayerHit() {
     if (!monster) return;
 
-    let distance = Phaser.Math.Distance.Between(player.x, player.y, monster.x, monster.y);
-    if (distance < 50) { // 一定距離内なら攻撃成功
-        let attackEffect = game.scene.scenes[0].add.image(monster.x, monster.y, 'attack');
-        attackEffect.setScale(0.5);
-        game.scene.scenes[0].time.delayedCall(200, () => attackEffect.destroy(), [], game.scene.scenes[0]);
+    // 攻撃エフェクトを表示
+    let attackEffect = game.scene.scenes[0].add.image(monster.x, monster.y, 'attack');
+    attackEffect.setScale(0.5);
+    game.scene.scenes[0].time.delayedCall(200, () => attackEffect.destroy(), [], game.scene.scenes[0]);
 
+    let randomChance = Phaser.Math.Between(1, 10); // 1～10のランダムな値を取得
+    if (randomChance === 1) { // 1/10の確率でモンスターを倒す
         monster.destroy();
         monster = null;
         console.log("モンスターを倒した！");
     }
 }
 
-// プレイヤーがモンスターに当たった時の処理
-function onPlayerHit() {
-    let randomChance = Phaser.Math.Between(1, 10); 
-    if (randomChance === 1) { // 1/10の確率でログアウト
-        logoutPlayer();
-    }
-}
+
 
 // ログアウト処理
 function logoutPlayer() {
