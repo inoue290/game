@@ -13,7 +13,7 @@ const game = new Phaser.Game(config);
 let player, monster, otherPlayers = {};
 let cursors, attackKey, socket, playerId;
 let monsterSpeed = 50;
-let successText;
+let successText, attackEffect;
 
 function preload() {
     this.load.image('player', 'assets/player.png');
@@ -122,14 +122,19 @@ function handleTouchMove(pointer) {
 function onPlayerHit(player, monster) {
     if (!monster) return;
 
-    let attackEffect = game.scene.scenes[0].add.image(monster.x, monster.y, 'attack');
+    // 攻撃エフェクトの表示
+    attackEffect = game.scene.scenes[0].add.image(monster.x, monster.y, 'attack');
     attackEffect.setScale(0.5);
     attackEffect.setDepth(1); 
 
-    game.scene.scenes[0].time.delayedCall(200, () => attackEffect.destroy(), [], game.scene.scenes[0]);
+    // 攻撃エフェクトを0.2秒後に削除
+    game.scene.scenes[0].time.delayedCall(200, () => {
+        attackEffect.destroy();
+    }, [], game.scene.scenes[0]);
 
     let randomChance = Phaser.Math.Between(1, 10);
     if (randomChance === 1) { 
+        // モンスターを削除
         monster.destroy();
         monster = null;
 
