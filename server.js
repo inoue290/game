@@ -5,6 +5,7 @@ const port = process.env.PORT || 3000;  // ポートが指定されていなけ�
 
 const server = new WebSocket.Server({ port: port, host: '0.0.0.0' });
 let players = {};
+let monsterPosition = { x: 400, y: 300 };  // モンスターの初期位置
 
 server.on('connection', (socket) => {
     console.log('🚀 プレイヤーが接続');
@@ -43,9 +44,18 @@ function broadcast(message) {
     });
 }
 
+// 定期的にモンスターの位置を更新して全員に送信
+setInterval(() => {
+    // モンスターのランダムな動きを設定
+    monsterPosition.x += Math.random() * 20 - 10;  // ランダムに位置を変更
+    monsterPosition.y += Math.random() * 20 - 10;
+
+    // モンスターの位置を全員に送信
+    broadcast(JSON.stringify({
+        type: 'monsterPosition',
+        x: monsterPosition.x,
+        y: monsterPosition.y
+    }));
+}, 1000);  // 1秒ごとに更新
+
 console.log('✅ WebSocketサーバー起動！');
-
-
-
-
-
