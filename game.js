@@ -42,7 +42,9 @@ function create() {
 
         } else if (data.type === 'monsterPosition') {
             // モンスターの位置更新
-            if (monster) {
+            if (!monster) {
+                monster = this.physics.add.sprite(data.x, data.y, 'monster');
+            } else {
                 monster.setPosition(data.x, data.y);
             }
         }
@@ -91,3 +93,4 @@ function updatePlayers(scene, playersData) {
         }
     }
 }
+
