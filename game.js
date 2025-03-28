@@ -1,16 +1,18 @@
-// ページ読み込み時に20桁の英数字を生成してURLに追加する
 window.onload = function () {
-    // 現在のURLにuserパラメータがすでに含まれているかチェック
     const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has('user')) {  // userパラメータがない場合のみ追加
+    
+    // userパラメータがない場合にのみ追加
+    if (!urlParams.has('user')) {
         const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
         const currentUrl = window.location.href;  // 現在のURLを取得
-
-        // URLにuserパラメータを追加
-        const newUrl = currentUrl.includes('?') ? `${currentUrl}&user=${randomString}` : `${currentUrl}?user=${randomString}`;
-
-        // ページをリロードして新しいURLに変更
-        window.location.replace(newUrl);  // replaceを使うことで、履歴が積み重ならずリロードされる
+        
+        // URLがすでにクエリパラメータを持っているかどうかを確認
+        const newUrl = currentUrl.includes('?') 
+            ? `${currentUrl}&user=${randomString}` 
+            : `${currentUrl}?user=${randomString}`;
+        
+        // 新しいURLにリダイレクト（replaceを使うことで履歴が残らない）
+        window.location.replace(newUrl);
     }
 };
 
@@ -24,6 +26,7 @@ function generateRandomString(length) {
     }
     return result;
 }
+
 
 const config = {
     type: Phaser.AUTO,
