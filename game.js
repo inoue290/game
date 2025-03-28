@@ -34,6 +34,7 @@ function generateRandomString(length) {
     return result;
 }
 
+//ここから
 const config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
