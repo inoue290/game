@@ -10,16 +10,14 @@
         console.log(window.rexuiplugin);  // プラグインが読み込まれているか確認
     </script>
     <style>
-        body, html {
+        /* デフォルトのスタイル (PC向け) */
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000; /* 背景を黒に設定 */
+            font-family: Arial, sans-serif;
         }
-
-        #game-container {
+        
+        .game-container {
             width: 100%;
             height: 100%;
             display: flex;
@@ -27,18 +25,18 @@
             align-items: center;
         }
         
-        @media (orientation: landscape) {
-            /* 横向き時に特別なスタイルを適用 */
-            body, html {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: #111;
+        /* スマホ向けのスタイル (画面幅が768px以下の場合) */
+        @media (max-width: 768px) {
+            .game-container {
+                width: 100%;
+                height: 100vh; /* 画面全体にゲームを表示 */
+                padding: 10px;
+                box-sizing: border-box;
             }
         
-            #game-container {
-                width: 100%;
-                height: 100%;
+            canvas {
+                width: 100% !important;  /* ゲーム画面を幅いっぱいに広げる */
+                height: auto !important; /* 高さは自動で調整 */
             }
         }
     </style>
