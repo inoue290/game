@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;  // ポートが指定されていなけ�
 const server = new WebSocket.Server({ port: port, host: '0.0.0.0' });
 let players = {};
 let monsterPosition = { x: 400, y: 300 };  // モンスターの初期位置
+let effects = [];  // エフェクトを格納する配列
 
 server.on('connection', (socket) => {
     console.log('🚀 プレイヤーが接続');
@@ -24,6 +25,15 @@ server.on('connection', (socket) => {
             players[data.id] = { x: data.x, y: data.y };
             // 他のクライアントに送信
             broadcast(JSON.stringify({ type: 'update', players }));
+        }
+        
+        // 衝突エフェクトの送信（例：プレイヤーがモンスターに衝突）
+        if (data.type === 'attack') {
+            // 衝突エフェクトを追加
+            const effect = { type: 'attack', x: data.x, y: data.y, timestamp: Date.now() };
+            effects.push(effect);
+            // エフェクト情報を全員に送信
+            broadcast(JSON.stringify({ type: 'effect', effect }));
         }
     });
 
@@ -58,5 +68,16 @@ setInterval(() => {
     }));
 }, 1000);  // 1秒ごとに更新
 
-console.log('✅ WebSocketサーバー起動！');
+// 定期的にエフェクトを更新して削除
+setInterval(() => {
+    // 1秒ごとに古いエフェクトを削除
+    const currentTime = Date.now();
+    effects = effects.filter(effect => currentTime - effect.timestamp < 1000);  // 1秒以内のエフェクトだけ残す
 
+    // 残ったエフェクトを全員に送信
+    effects.forEach(effect => {
+        broadcast(JSON.stringify({ type: 'effect', effect }));
+    });
+}, 1000);  // 1秒ごとにエフェクトを更新
+
+console.log('✅ WebSocketサーバー起動！');
