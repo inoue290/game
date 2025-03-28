@@ -10,7 +10,7 @@ window.onload = function () {
         const newUrl = currentUrl.includes('?') ? `${currentUrl}&user=${randomString}` : `${currentUrl}?user=${randomString}`;
 
         // ページをリロードして新しいURLに変更
-        window.location.href = newUrl;
+        window.location.replace(newUrl);  // replaceを使うことで、履歴が積み重ならずリロードされる
     }
 };
 
@@ -24,7 +24,6 @@ function generateRandomString(length) {
     }
     return result;
 }
-
 
 const config = {
     type: Phaser.AUTO,
