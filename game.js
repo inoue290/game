@@ -105,7 +105,7 @@ function create() {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
         }
-    };
+    }
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
