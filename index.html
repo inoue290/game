@@ -2,13 +2,31 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
     <title>キャラ移動</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/phaser3-rex-plugins@3.18.0/dist/rexuiplugin.min.js"></script>
     <script>
         console.log(window.rexuiplugin);  // プラグインが読み込まれているか確認
     </script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000; /* 背景を黒に設定 */
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <script src="game.js"></script>
