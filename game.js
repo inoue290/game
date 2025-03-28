@@ -29,11 +29,7 @@ function preload() {
 function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
-    // ユーザーIDをURLパラメータとして取得
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user');
-    // WebSocket接続のURLにユーザーIDを含める
-    socket = new WebSocket(`wss://game-7scn.onrender.com?user=${userId}`);// WebSocket接続の確立
+    socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
