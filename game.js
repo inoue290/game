@@ -106,18 +106,65 @@ function create() {
         }
     };
 
-    // プレイヤーの入力（移動）処理
-    cursors = this.input.keyboard.createCursorKeys();
+// プレイヤーの入力（移動）処理
+cursors = this.input.keyboard.createCursorKeys();
 
-    // スマホ操作用タッチイベント（プレイヤー移動）
-    this.input.on('pointermove', (pointer) => {
-        if (player) {
-            const x = pointer.x;
-            const y = pointer.y;
-            player.setPosition(x, y);  // プレイヤーの位置をタッチ位置に設定
-            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
-        }
-    });
+// 変数の定義
+let dragStartX = 0;
+let dragStartY = 0;
+let dragging = false;
+let velocityX = 0;
+let velocityY = 0;
+let springForce = 0.1;  // ゴムの引っ張り具合（調整可能）
+
+// スマホ操作用タッチイベント（プレイヤー移動）
+// pointerdown: タッチ開始
+this.input.on('pointerdown', (pointer) => {
+    if (player) {
+        dragStartX = pointer.x;
+        dragStartY = pointer.y;
+        dragging = true;  // 引っ張り中
+    }
+});
+
+// pointermove: タッチ中の移動
+this.input.on('pointermove', (pointer) => {
+    if (dragging && player) {
+        const dx = pointer.x - dragStartX;  // タッチ開始位置からの移動量
+        const dy = pointer.y - dragStartY;
+
+        player.setPosition(pointer.x, pointer.y);  // プレイヤーの位置をタッチ位置に設定
+
+        // 引っ張りの力を計算
+        velocityX = dx * springForce;  // 引っ張られた距離に比例して力を加える
+        velocityY = dy * springForce;
+    }
+});
+
+// pointerup: タッチ終了（リリース時）
+this.input.on('pointerup', () => {
+    if (dragging && player) {
+        dragging = false;
+        
+        // タッチを離したときに、力を加えて飛ばす
+        player.setVelocity(velocityX, velocityY);  // プレイヤーに加速度を設定
+        socket.send(JSON.stringify({ type: 'move', id: playerId, x: player.x, y: player.y }));  // プレイヤーの位置をサーバーに送信
+    }
+});
+
+// プレイヤーの位置と速度を更新する
+function update() {
+    if (player) {
+        // プレイヤーが物理エンジンを使用している場合、速度が影響する
+        player.x += velocityX;
+        player.y += velocityY;
+
+        // 速度を減少させる（ゴムが元に戻る感じ）
+        velocityX *= 0.95;  // 減衰率（速度が少しずつ減る）
+        velocityY *= 0.95;  // 減衰率（速度が少しずつ減る）
+    }
+}
+
 }
 
 // 衝突時のエフェクトを処理する関数
