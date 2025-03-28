@@ -105,75 +105,76 @@ function create() {
             }
         }
     };
+}
 
-        // プレイヤーの入力（移動）処理
-        cursors = this.input.keyboard.createCursorKeys();
+
+
+// プレイヤーの入力（移動）処理
+cursors = this.input.keyboard.createCursorKeys();
+
+// 変数の定義
+let dragStartX = 0;
+let dragStartY = 0;
+let dragging = false;
+let velocityX = 0;
+let velocityY = 0;
+let springForce = 0.1;  // ゴムの引っ張り具合（調整可能）
+let friction = 0.98;    // 摩擦（減速率）
+
+// スマホ操作用タッチイベント（プレイヤー移動）
+// pointerdown: タッチ開始
+this.input.on('pointerdown', (pointer) => {
+    if (player) {
+        dragStartX = pointer.x;
+        dragStartY = pointer.y;
+        dragging = true;  // 引っ張り中
+    }
+});
+
+// pointermove: タッチ中の移動（プレイヤーは移動しない）
+this.input.on('pointermove', (pointer) => {
+    if (dragging && player) {
+        // プレイヤーの移動を無効化（引っ張り位置の変更のみ）
+        const dx = pointer.x - dragStartX;  // タッチ開始位置からの移動量
+        const dy = pointer.y - dragStartY;
+
+        // タッチを引っ張った距離を基にして、力を設定
+        velocityX = dx * springForce;  // 引っ張りの力
+        velocityY = dy * springForce;
+    }
+});
+
+// pointerup: タッチ終了（リリース時）
+this.input.on('pointerup', () => {
+    if (dragging && player) {
+        dragging = false;
         
-        // 変数の定義
-        let dragStartX = 0;
-        let dragStartY = 0;
-        let dragging = false;
-        let velocityX = 0;
-        let velocityY = 0;
-        let springForce = 0.1;  // ゴムの引っ張り具合（調整可能）
-        let friction = 0.98;    // 摩擦（減速率）
-        
-        // スマホ操作用タッチイベント（プレイヤー移動）
-        // pointerdown: タッチ開始
-        this.input.on('pointerdown', (pointer) => {
-            if (player) {
-                dragStartX = pointer.x;
-                dragStartY = pointer.y;
-                dragging = true;  // 引っ張り中
-            }
-        });
-        
-        // pointermove: タッチ中の移動（プレイヤーは移動しない）
-        this.input.on('pointermove', (pointer) => {
-            if (dragging && player) {
-                // プレイヤーの移動を無効化（引っ張り位置の変更のみ）
-                const dx = pointer.x - dragStartX;  // タッチ開始位置からの移動量
-                const dy = pointer.y - dragStartY;
-        
-                // タッチを引っ張った距離を基にして、力を設定
-                velocityX = dx * springForce;  // 引っ張りの力
-                velocityY = dy * springForce;
-            }
-        });
-        
-        // pointerup: タッチ終了（リリース時）
-        this.input.on('pointerup', () => {
-            if (dragging && player) {
-                dragging = false;
-                
-                // タッチを離した時に、力を加えて飛ばす
-                socket.send(JSON.stringify({ type: 'move', id: playerId, x: player.x, y: player.y }));
-            }
-        });
-        
-        // プレイヤーの位置と速度を更新する
-        function update() {
-            if (player) {
-                // プレイヤーに加速度を設定
-                player.x += velocityX;
-                player.y += velocityY;
-        
-                // 速度を減少させる（ゴムが元に戻る感じ）
-                velocityX *= friction;  // 減衰率（速度が少しずつ減る）
-                velocityY *= friction;  // 減衰率（速度が少しずつ減る）
-        
-                // 壁に衝突した場合、反射する処理（仮に画面内に収める場合）
-                if (player.x <= 0 || player.x >= window.innerWidth) {
-                    velocityX *= -1;  // x方向の反射
-                }
-                if (player.y <= 0 || player.y >= window.innerHeight) {
-                    velocityY *= -1;  // y方向の反射
-                }
-            }
+        // タッチを離した時に、力を加えて飛ばす
+        socket.send(JSON.stringify({ type: 'move', id: playerId, x: player.x, y: player.y }));
+    }
+});
+
+// プレイヤーの位置と速度を更新する
+function update() {
+    if (player) {
+        // プレイヤーに加速度を設定
+        player.x += velocityX;
+        player.y += velocityY;
+
+        // 速度を減少させる（ゴムが元に戻る感じ）
+        velocityX *= friction;  // 減衰率（速度が少しずつ減る）
+        velocityY *= friction;  // 減衰率（速度が少しずつ減る）
+
+        // 壁に衝突した場合、反射する処理（仮に画面内に収める場合）
+        if (player.x <= 0 || player.x >= window.innerWidth) {
+            velocityX *= -1;  // x方向の反射
+        }
+        if (player.y <= 0 || player.y >= window.innerHeight) {
+            velocityY *= -1;  // y方向の反射
         }
     }
-
-
+}
+    
 // 衝突時のエフェクトを処理する関数
 function handleCollision(player, other) {
     // 衝突した場合、攻撃エフェクトを表示
