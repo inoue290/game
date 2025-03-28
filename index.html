@@ -11,38 +11,6 @@
     </script>
 </head>
 <body>
-    <script>
-        // WebSocket接続
-        socket = new WebSocket('wss://game-7scn.onrender.com');  // サーバーのURLを指定
-
-        // WebSocketが接続されたら
-        socket.onopen = () => {
-            console.log('WebSocket接続成功');
-        };
-
-        // メッセージ受信
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'welcome') {
-                const playerId = data.id;
-                const userUrl = data.userUrl;  // userUrlを受け取る
-                console.log('プレイヤーID:', playerId);
-                console.log('userUrl:', userUrl);
-
-                // URLに?user=playerIdを追加
-                const newUrl = window.location.href.split('?')[0] + userUrl;
-                console.log('新しいURL:', newUrl);
-
-                // URLを更新してリダイレクト
-                window.location.href = newUrl;  // ここでページ遷移を実行
-            }
-        };
-
-        // WebSocket切断
-        socket.onclose = () => {
-            console.log('WebSocket接続が切断されました');
-        };
-    </script>
     <script src="game.js"></script>
 </body>
 </html>
