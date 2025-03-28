@@ -9,6 +9,11 @@
     <script>
         console.log(window.rexuiplugin);  // プラグインが読み込まれているか確認
     </script>
+    <script>
+        window.addEventListener('resize', function() {
+        game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+    </script>
     <style>
         /* デフォルトのスタイル (PC向け) */
         body {
