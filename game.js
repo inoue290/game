@@ -1,3 +1,27 @@
+// ページ読み込み時に20桁の英数字を生成してURLに追加する
+window.onload = function () {
+    const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
+    const currentUrl = window.location.href;  // 現在のURLを取得
+
+    // URLにuserパラメータを追加
+    const newUrl = currentUrl.includes('?') ? `${currentUrl}&user=${randomString}` : `${currentUrl}?user=${randomString}`;
+
+    // ページをリロードして新しいURLに変更
+    window.location.href = newUrl;
+};
+
+// 20桁のランダムな英数字を生成する関数
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters[randomIndex];
+    }
+    return result;
+}
+
+
 const config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
