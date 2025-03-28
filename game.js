@@ -46,6 +46,8 @@ function create() {
         if (data.type === 'welcome') {
             // サーバーからプレイヤーIDが送られてきた場合
             playerId = data.id;
+            // playerIdを使ってURLに追加し、ページをリロード
+            setUserInUrl(playerId);
             player = this.physics.add.sprite(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'player');
             player.setCollideWorldBounds(true);  // 画面外に出ないように設定
             player.setBounce(1);  // 画面の端に当たったときの反発を有効にする
