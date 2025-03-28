@@ -10,7 +10,7 @@ window.onload = function () {
         const newUrl = `${currentUrl}?user=${randomString}`;
         
         // 新しいURLにリダイレクト（履歴が残らないようにする）
-        window.location.replace(newUrl);
+        window.location.href = newUrl; // location.hrefを使用
     }
 };
 
