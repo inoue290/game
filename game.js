@@ -111,32 +111,14 @@ function create() {
     cursors = this.input.keyboard.createCursorKeys();
 
     // スマホ操作用タッチイベント（プレイヤー移動）
-    let previousPointer = null;  // 前回のタッチ位置を保持
     this.input.on('pointermove', (pointer) => {
         if (player) {
-            if (previousPointer) {
-                // 前回のタッチ位置との差分を計算
-                const deltaX = pointer.x - previousPointer.x;
-                const deltaY = pointer.y - previousPointer.y;
-    
-                // プレイヤーをスライド方向に移動
-                player.x += deltaX;
-                player.y += deltaY;
-    
-                // 新しい位置をサーバーに送信
-                socket.send(JSON.stringify({ type: 'move', id: playerId, x: player.x, y: player.y }));
-            }
-    
-            // 現在のタッチ位置を保存
-            previousPointer = pointer;
+            const x = pointer.x;
+            const y = pointer.y;
+            player.setPosition(x, y);  // プレイヤーの位置をタッチ位置に設定
+            socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
-    
-    // タッチが終わったとき、前回のタッチ位置をリセット
-    this.input.on('pointerup', () => {
-        previousPointer = null;
-});
-
 }
 
 // 衝突時のエフェクトを処理する関数
