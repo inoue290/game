@@ -1,4 +1,9 @@
 window.onload = function () {
+    // すでにリダイレクトしたことがある場合、処理をスキップ
+    if (localStorage.getItem('redirected') === 'true') {
+        return;  // リダイレクト済みなら何もしない
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
 
     // userパラメータがなければ、ランダムな値を生成して追加
@@ -11,6 +16,9 @@ window.onload = function () {
         
         // 新しいURLにリダイレクト（履歴が残らないようにする）
         window.location.href = newUrl; // location.hrefを使用
+
+        // リダイレクト済みとしてローカルストレージにフラグを設定
+        localStorage.setItem('redirected', 'true');
     }
 };
 
@@ -24,6 +32,7 @@ function generateRandomString(length) {
     }
     return result;
 }
+
 
 const config = {
     type: Phaser.AUTO,
