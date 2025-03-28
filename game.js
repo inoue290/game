@@ -19,6 +19,14 @@ let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
 
+function setUserInUrl(playerId) {
+    const currentUrl = window.location.href.split('?')[0];  // ?以降を削除してベースURLを取得
+    const newUrl = currentUrl + '?user=' + playerId;  // ?user=プレイヤーIDを追加
+    // URLを更新してページをリロード
+    window.history.pushState({}, '', newUrl);  // 新しいURLを履歴に追加
+    window.location.reload();  // ページをリロード
+}
+
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
     this.load.image('player', 'assets/player.png');  // プレイヤー画像の読み込み
