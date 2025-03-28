@@ -63,8 +63,6 @@ function preload() {
     this.load.image('attack', 'assets/attack.png');  // 攻撃エフェクト画像の読み込み
 }
 
-let lastPointer = null;  // 最後のポインタの位置を保存
-
 function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
@@ -107,39 +105,7 @@ function create() {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
         }
-    }
-
-    // プレイヤーの入力（移動）処理
-    cursors = this.input.keyboard.createCursorKeys();
-
-    // スマホ操作用タッチイベント（スライドでプレイヤー移動）
-    this.input.on('pointerdown', (pointer) => {
-        lastPointer = { x: pointer.x, y: pointer.y };  // タッチ開始時の位置を保存
-    });
-
-    this.input.on('pointermove', (pointer) => {
-        if (lastPointer) {
-            const dx = pointer.x - lastPointer.x;  // 横方向の移動量
-            const dy = pointer.y - lastPointer.y;  // 縦方向の移動量
-
-            if (player) {
-                // プレイヤーをスライド量だけ移動
-                player.x += dx;
-                player.y += dy;
-
-                // プレイヤーの新しい位置をサーバーに送信
-                socket.send(JSON.stringify({ type: 'move', id: playerId, x: player.x, y: player.y }));
-            }
-
-            // 最後のタッチ位置を更新
-            lastPointer = { x: pointer.x, y: pointer.y };
-        }
-    });
-
-    this.input.on('pointerup', () => {
-        lastPointer = null;  // タッチが終了したら、ポインタの位置をリセット
-    });
-}
+    };
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
@@ -156,34 +122,23 @@ function create() {
 }
 
 // 衝突時のエフェクトを処理する関数
-let lastCollisionTime = 0;  // 最後の衝突イベントが発生した時間
-const collisionCooldown = 200;  // 衝突イベントの間隔（ミリ秒）
-
 function handleCollision(player, other) {
-    let currentTime = this.time.now;
-    // 最後の衝突から200ミリ秒以上経過していたらエフェクトを表示
-    if (currentTime - lastCollisionTime >= collisionCooldown) {
-        // 衝突した場合、攻撃エフェクトを表示
-        let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
-        attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
-        attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
+    // 衝突した場合、攻撃エフェクトを表示
+    let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
+    attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
+    attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
 
-        // 0.5秒後にエフェクトを非表示にし、削除
-        this.time.delayedCall(attackEffectDuration, () => {
-            attackEffect.setAlpha(0);  // 透明にする
-            attackEffect.destroy();  // エフェクトを削除
-        });
-
+    // 0.5秒後にエフェクトを非表示にし、削除
+    this.time.delayedCall(attackEffectDuration, () => {
+        attackEffect.setAlpha(0);  // 透明にする
+        attackEffect.destroy();  // エフェクトを削除
+    });
         // サーバーに攻撃エフェクトの情報を送信
-        socket.send(JSON.stringify({
-            type: 'attackEffect',
-            x: player.x,
-            y: player.y
-        }));
-
-        // 最後の衝突時間を記録
-        lastCollisionTime = currentTime;
-    }
+    socket.send(JSON.stringify({
+        type: 'attackEffect',
+        x: player.x,
+        y: player.y
+    }));
 }
 
 // モンスターのランダムな動きとサーバーへの送信
