@@ -1,17 +1,15 @@
 window.onload = function () {
     const urlParams = new URLSearchParams(window.location.search);
-    
-    // userパラメータがない場合にのみ追加
+
+    // userパラメータがなければ、ランダムな値を生成して追加
     if (!urlParams.has('user')) {
         const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
-        const currentUrl = window.location.href;  // 現在のURLを取得
+        const currentUrl = window.location.href.split('?')[0]; // ?より前のURLを取得
         
-        // URLがすでにクエリパラメータを持っているかどうかを確認
-        const newUrl = currentUrl.includes('?') 
-            ? `${currentUrl}&user=${randomString}` 
-            : `${currentUrl}?user=${randomString}`;
+        // 新しいURLを作成
+        const newUrl = `${currentUrl}?user=${randomString}`;
         
-        // 新しいURLにリダイレクト（replaceを使うことで履歴が残らない）
+        // 新しいURLにリダイレクト（履歴が残らないようにする）
         window.location.replace(newUrl);
     }
 };
@@ -26,7 +24,6 @@ function generateRandomString(length) {
     }
     return result;
 }
-
 
 const config = {
     type: Phaser.AUTO,
