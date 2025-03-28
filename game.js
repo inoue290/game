@@ -9,13 +9,13 @@ window.onload = function () {
     // userパラメータがなければ、ランダムな値を生成して追加
     if (!urlParams.has('user')) {
         const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
-        const currentUrl = window.location.href.split('?')[0]; // ?より前のURLを取得
-        
-        // 新しいURLを作成（?を最初に追加）
-        const newUrl = `${currentUrl}?user=${randomString}${window.location.search ? '&' + window.location.search.split('?')[1] : ''}`;
+        const currentUrl = new URL(window.location.href); // 現在のURLをURLオブジェクトで取得
+
+        // userパラメータを追加
+        currentUrl.searchParams.set('user', randomString);
 
         // 新しいURLにリダイレクト（履歴が残らないようにする）
-        window.location.href = newUrl;
+        window.location.href = currentUrl.toString();
 
         // リダイレクト済みとしてローカルストレージにフラグを設定
         localStorage.setItem('redirected', 'true');
