@@ -23,6 +23,10 @@ window.onload = function () {
     }
 };
 
+window.addEventListener('resize', function() {
+    game.scale.resize(window.innerWidth, window.innerHeight);
+});
+
 // 20桁のランダムな英数字を生成する関数
 function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
