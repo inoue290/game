@@ -14,7 +14,9 @@ server.on('connection', (socket) => {
     const playerId = Math.random().toString(36).substring(2, 10);
     players[playerId] = { x: 400, y: 300 };
 
-    socket.send(JSON.stringify({ type: 'welcome', id: playerId }));
+    // `?user=${playerId}`を含むURLをクライアントに送信
+    const userUrl = `?user=${playerId}`;
+    socket.send(JSON.stringify({ type: 'welcome', id: playerId, userUrl: userUrl }));
 
     // メッセージを受信
     socket.on('message', (message) => {
