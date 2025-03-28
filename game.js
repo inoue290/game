@@ -63,6 +63,8 @@ function preload() {
     this.load.image('attack', 'assets/attack.png');  // 攻撃エフェクト画像の読み込み
 }
 
+let lastPointer = null;  // 最後のポインタの位置を保存
+
 function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
@@ -106,6 +108,38 @@ function create() {
             }
         }
     }
+
+    // プレイヤーの入力（移動）処理
+    cursors = this.input.keyboard.createCursorKeys();
+
+    // スマホ操作用タッチイベント（スライドでプレイヤー移動）
+    this.input.on('pointerdown', (pointer) => {
+        lastPointer = { x: pointer.x, y: pointer.y };  // タッチ開始時の位置を保存
+    });
+
+    this.input.on('pointermove', (pointer) => {
+        if (lastPointer) {
+            const dx = pointer.x - lastPointer.x;  // 横方向の移動量
+            const dy = pointer.y - lastPointer.y;  // 縦方向の移動量
+
+            if (player) {
+                // プレイヤーをスライド量だけ移動
+                player.x += dx;
+                player.y += dy;
+
+                // プレイヤーの新しい位置をサーバーに送信
+                socket.send(JSON.stringify({ type: 'move', id: playerId, x: player.x, y: player.y }));
+            }
+
+            // 最後のタッチ位置を更新
+            lastPointer = { x: pointer.x, y: pointer.y };
+        }
+    });
+
+    this.input.on('pointerup', () => {
+        lastPointer = null;  // タッチが終了したら、ポインタの位置をリセット
+    });
+}
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
