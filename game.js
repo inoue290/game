@@ -19,6 +19,7 @@ window.onload = function () {
 
         // リダイレクト済みとしてローカルストレージにフラグを設定
         localStorage.setItem('redirected', 'true');
+        return;  // ここで処理を終了させる
     }
 };
 
