@@ -105,7 +105,7 @@ function create() {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
         }
-    };
+    }
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
@@ -122,23 +122,34 @@ function create() {
 }
 
 // 衝突時のエフェクトを処理する関数
-function handleCollision(player, other) {
-    // 衝突した場合、攻撃エフェクトを表示
-    let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
-    attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
-    attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
+let lastCollisionTime = 0;  // 最後の衝突イベントが発生した時間
+const collisionCooldown = 200;  // 衝突イベントの間隔（ミリ秒）
 
-    // 0.5秒後にエフェクトを非表示にし、削除
-    this.time.delayedCall(attackEffectDuration, () => {
-        attackEffect.setAlpha(0);  // 透明にする
-        attackEffect.destroy();  // エフェクトを削除
-    });
+function handleCollision(player, other) {
+    let currentTime = this.time.now;
+    // 最後の衝突から200ミリ秒以上経過していたらエフェクトを表示
+    if (currentTime - lastCollisionTime >= collisionCooldown) {
+        // 衝突した場合、攻撃エフェクトを表示
+        let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
+        attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
+        attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
+
+        // 0.5秒後にエフェクトを非表示にし、削除
+        this.time.delayedCall(attackEffectDuration, () => {
+            attackEffect.setAlpha(0);  // 透明にする
+            attackEffect.destroy();  // エフェクトを削除
+        });
+
         // サーバーに攻撃エフェクトの情報を送信
-    socket.send(JSON.stringify({
-        type: 'attackEffect',
-        x: player.x,
-        y: player.y
-    }));
+        socket.send(JSON.stringify({
+            type: 'attackEffect',
+            x: player.x,
+            y: player.y
+        }));
+
+        // 最後の衝突時間を記録
+        lastCollisionTime = currentTime;
+    }
 }
 
 // モンスターのランダムな動きとサーバーへの送信
@@ -146,7 +157,6 @@ let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
 let monsterSpeed = 2;  // モンスターの移動速度
 let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
-
 function update() {
     if (!player) return;  // プレイヤーがいない場合は何も処理しない
 
