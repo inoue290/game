@@ -10,10 +10,15 @@ window.onload = function () {
     if (!urlParams.has('user')) {
         const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
         const currentUrl = window.location.href.split('?')[0]; // ?より前のURLを取得
-        
+
+        // userパラメータが既に存在していた場合にリダイレクトを防ぐ処理
+        if (urlParams.getAll('user').length > 0) {
+            return; // ユーザーパラメータが既にある場合はリダイレクトしない
+        }
+
         // 新しいURLを作成
         const newUrl = `${currentUrl}?user=${randomString}`;
-        
+
         // 新しいURLにリダイレクト（履歴が残らないようにする）
         window.location.href = newUrl; // location.hrefを使用
 
@@ -33,6 +38,7 @@ function generateRandomString(length) {
     }
     return result;
 }
+
 
 
 const config = {
