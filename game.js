@@ -150,6 +150,7 @@ function handleCollision(player, other) {
         // 最後の衝突時間を記録
         lastCollisionTime = currentTime;
     }
+}
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
