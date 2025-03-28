@@ -1,13 +1,17 @@
 // ページ読み込み時に20桁の英数字を生成してURLに追加する
 window.onload = function () {
-    const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
-    const currentUrl = window.location.href;  // 現在のURLを取得
+    // 現在のURLにuserパラメータがすでに含まれているかチェック
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('user')) {  // userパラメータがない場合のみ追加
+        const randomString = generateRandomString(20);  // ランダムな20桁の英数字を生成
+        const currentUrl = window.location.href;  // 現在のURLを取得
 
-    // URLにuserパラメータを追加
-    const newUrl = currentUrl.includes('?') ? `${currentUrl}&user=${randomString}` : `${currentUrl}?user=${randomString}`;
+        // URLにuserパラメータを追加
+        const newUrl = currentUrl.includes('?') ? `${currentUrl}&user=${randomString}` : `${currentUrl}?user=${randomString}`;
 
-    // ページをリロードして新しいURLに変更
-    window.location.href = newUrl;
+        // ページをリロードして新しいURLに変更
+        window.location.href = newUrl;
+    }
 };
 
 // 20桁のランダムな英数字を生成する関数
