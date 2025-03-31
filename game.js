@@ -105,11 +105,19 @@ function create() {
                 monster.setCollideWorldBounds(true);  // モンスターが画面外に出ないように
                 monster.setBounce(1);  // モンスターの反発を有効にする
                 // プレイヤーとモンスターの衝突判定
+                this.physics.add.collider(player, monster, handleCollision, null, this);
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
-            }
-            // プレイヤーとモンスターの衝突判定
-           this.physics.add.collider(player, monster, handleCollision, null, this);
+            } else if (data.type === 'updatePlayerHP') {
+            // プレイヤーのHPを受信して更新
+            playerHP = data.hp;
+            playerHPText.setText(`Player HP: ${playerHP}`);
+        }
+            // モンスターのHPを受信して更新
+            if (data.type === 'updateMonsterHP') {
+                monsterHP = data.hp;
+                monsterHPText.setText(`Monster HP: ${monsterHP}`);
+            }  
         }
     }
 
@@ -231,7 +239,8 @@ let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
 function update() {
     if (!player || !monster) return;  // プレイヤーとモンスターが存在しない場合は何も処理しない
-
+    updateHPDisplay();  // HPラベルの位置を更新
+    
     let speed = 3;
     let moved = false;
     let x = player.x, y = player.y;
