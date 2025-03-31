@@ -165,7 +165,7 @@ function handleCollision(player, other) {
 
         // HPが0になったら処理
         if (playerHP <= 0) {
-            alert("You died! Logging out...");
+            alert("ぶっ殺されました");
             
             // サーバーにプレイヤーの死亡情報を送信
             socket.send(JSON.stringify({
@@ -174,7 +174,7 @@ function handleCollision(player, other) {
             }));
 
             socket.close(); // WebSocketを切断
-            // location.reload(); // ページをリロード（サーバー側で処理するなら不要）
+            location.reload(); // ページをリロード（サーバー側で処理するなら不要）
         }
 
         if (monsterHP <= 0) {
