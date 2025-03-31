@@ -148,7 +148,9 @@ function handleCollision(player, other) {
         // HPを減少させる
         if (other === monster) {
             monsterHP -= 1;  // モンスターに攻撃した場合
+            playerHP -= 10; //プレイヤーの受けるダメージ
             monsterHPText.setText(`Monster HP: ${monsterHP}`);
+            playerHPText.setText(`Player HP: ${playerHP}`);
         } else if (other === player) {
             playerHP -= 10;  // プレイヤーのHPを減らす
             playerHPText.setText(`Player HP: ${playerHP}`);
