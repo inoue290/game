@@ -27,17 +27,31 @@ server.on('connection', (socket) => {
             broadcast(JSON.stringify({ type: 'update', players }));
         }
 
-        // プレイヤーが攻撃した場合、HP減少
-        if (data.type === 'attack') {
-            const player = players[data.id];
-            console.log('Player before attack:', player);  // 攻撃前のプレイヤー情報を確認
-            if (player) {
-                player.hp -= 10;  // 攻撃を受けた場合にHPを減少
-                if (player.hp < 0) player.hp = 0;  // HPが0未満にならないようにする
-                console.log('Player after attack:', player);  // 攻撃後のプレイヤー情報を確認
-                // プレイヤーのHP情報を全員に送信
-                broadcast(JSON.stringify({ type: 'update', players }));
-            }
+    // プレイヤーが攻撃した場合、HP減少
+    if (data.type === 'attack') {
+        const player = players[data.id];
+        const monster = players[data.monsterId];  // モンスターのIDを取得（仮にdata.monsterIdとしています）
+    
+        console.log('Player before attack:', player);  // 攻撃前のプレイヤー情報を確認
+        console.log('Monster before attack:', monster);  // 攻撃前のモンスター情報を確認
+    
+        if (player) {
+            player.hp -= 10;  // プレイヤーのHPを10減らす
+            if (player.hp < 0) player.hp = 0;  // プレイヤーのHPが0未満にならないようにする
+        }
+    
+        if (monster) {
+            monster.hp -= 1;  // モンスターのHPを1減らす
+            if (monster.hp < 0) monster.hp = 0;  // モンスターのHPが0未満にならないようにする
+        }
+    
+        console.log('Player after attack:', player);  // 攻撃後のプレイヤー情報を確認
+        console.log('Monster after attack:', monster);  // 攻撃後のモンスター情報を確認
+    
+        // プレイヤーとモンスターのHP情報を全員に送信
+        broadcast(JSON.stringify({ type: 'update', players }));
+    }
+
         }
     });
 
@@ -47,6 +61,7 @@ server.on('connection', (socket) => {
         delete players[playerId];
         broadcast(JSON.stringify({ type: 'update', players }));
     });
+    
 });
 
 // すべてのクライアントにデータを送信する関数
