@@ -55,6 +55,8 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
+let playerHp = 100;  // プレイヤーのHP
+let monsterHp = 100;  // モンスターのHP
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -68,6 +70,19 @@ function create() {
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
 
     socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
+
+    // プレイヤーとモンスターのHPラベルを表示
+    const playerHpLabel = this.add.text(player.x, player.y + 50, `HP: ${playerHp}`, {
+        fontSize: '20px',
+        fill: '#FFFFFF',
+        align: 'center'
+    }).setOrigin(0.5, 0.5);
+
+    const monsterHpLabel = this.add.text(monster.x, monster.y + 50, `HP: ${monsterHp}`, {
+        fontSize: '20px',
+        fill: '#FF0000',
+        align: 'center'
+    }).setOrigin(0.5, 0.5);
 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
@@ -89,6 +104,13 @@ function create() {
                 }
             }
 
+            // プレイヤーHPラベルの設定
+            playerHpLabel = this.add.text(player.x, player.y + 50, `HP: ${playerHp}`, {
+                fontSize: '20px',
+                fill: '#FFFFFF',
+                align: 'center'
+            }).setOrigin(0.5, 0.5);
+
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置を更新
             updatePlayers(this, data.players);
@@ -101,6 +123,12 @@ function create() {
                 monster.setBounce(1);  // モンスターの反発を有効にする
                 // プレイヤーとモンスターの衝突判定
                 this.physics.add.collider(player, monster, handleCollision, null, this);
+                // モンスターHPラベルの設定
+                monsterHpLabel = this.add.text(monster.x, monster.y + 50, `HP: ${monsterHp}`, {
+                    fontSize: '20px',
+                    fill: '#FF0000',
+                    align: 'center'
+                }).setOrigin(0.5, 0.5);
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
@@ -159,6 +187,12 @@ let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
 function update() {
     if (!player) return;  // プレイヤーがいない場合は何も処理しない
+    if (player) {  // プレイヤーHPラベルの位置を更新
+    playerHpLabel.setPosition(player.x, player.y + 50);
+    }
+    if (monster) {  // モンスターHPラベルの位置を更新
+        monsterHpLabel.setPosition(monster.x, monster.y + 50);
+    }
 
     let speed = 3;
     let moved = false;
