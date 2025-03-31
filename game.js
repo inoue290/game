@@ -163,12 +163,12 @@ function handleCollision(player, other) {
             playerHP -= 10;  // プレイヤーのHPを減らす
             monsterHP -= 1;  // モンスターのHPを減らす
 
-            // サーバーにHPの更新を送信
-            socket.send(JSON.stringify({
-                type: 'hpUpdate',
-                playerHP: playerHP,
-                monsterHP: monsterHP
-            }));
+        // サーバーにHPの更新を送信
+        socket.send(JSON.stringify({
+            type: 'hpUpdate',
+            playerHP: playerHP,
+            monsterHP: monsterHP
+        }));
         }
 
         // サーバーからのHP更新を受け取る処理
