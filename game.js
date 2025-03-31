@@ -126,6 +126,18 @@ function create() {
     });
 }
 
+// HPの更新処理
+function updateHPDisplay() {
+    playerHPText.setText(`Player HP: ${playerHP}`);
+    monsterHPText.setText(`Monster HP: ${monsterHP}`);
+    
+    // プレイヤーのHPラベルをプレイヤーキャラクターの真下に配置
+    playerHPText.setPosition(player.x, player.y + 30); // プレイヤーの下に表示
+
+    // モンスターのHPラベルをモンスターキャラクターの真下に配置
+    monsterHPText.setPosition(monster.x, monster.y + 30); // モンスターの下に表示
+}
+
 // 衝突時のエフェクトを処理する関数
 let lastCollisionTime = 0;  // 最後の衝突イベントが発生した時間
 const collisionCooldown = 200;  // 衝突イベントの間隔（ミリ秒）
@@ -193,6 +205,23 @@ function handleCollision(player, other) {
         lastCollisionTime = currentTime;
     }
 }
+
+// サーバーとの通信でHPを同期
+socket.onmessage = function(event) {
+    let data = JSON.parse(event.data);
+
+    // プレイヤーのHPを受信して更新
+    if (data.type === 'updatePlayerHP') {
+        playerHP = data.hp;
+        playerHPText.setText(`Player HP: ${playerHP}`);
+    }
+
+    // モンスターのHPを受信して更新
+    if (data.type === 'updateMonsterHP') {
+        monsterHP = data.hp;
+        monsterHPText.setText(`Monster HP: ${monsterHP}`);
+    }
+};
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
