@@ -229,7 +229,7 @@ let monsterSpeed = 2;  // モンスターの移動速度
 let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
 function update() {
-    if (!player) return;  // プレイヤーがいない場合は何も処理しない
+    if (!player || !monster) return;  // プレイヤーとモンスターが存在しない場合は何も処理しない
 
     let speed = 3;
     let moved = false;
