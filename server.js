@@ -30,9 +30,11 @@ server.on('connection', (socket) => {
         // プレイヤーが攻撃した場合、HP減少
         if (data.type === 'attack') {
             const player = players[data.id];
+            console.log('Player before attack:', player);  // 攻撃前のプレイヤー情報を確認
             if (player) {
                 player.hp -= 10;  // 攻撃を受けた場合にHPを減少
                 if (player.hp < 0) player.hp = 0;  // HPが0未満にならないようにする
+                console.log('Player after attack:', player);  // 攻撃後のプレイヤー情報を確認
                 // プレイヤーのHP情報を全員に送信
                 broadcast(JSON.stringify({ type: 'update', players }));
             }
