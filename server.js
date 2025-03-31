@@ -36,17 +36,6 @@ server.on('connection', (socket) => {
             // エフェクト情報を全員に送信
             broadcast(JSON.stringify({ type: 'effect', effect }));
         }
-
-        if (data.type === 'attack') {
-            // プレイヤーの攻撃がモンスターに当たった場合
-            if (isCollision(data.x, data.y, monsterPosition.x, monsterPosition.y)) {
-                monsterHP -= 10;  // モンスターのHPを減らす
-                broadcast(JSON.stringify({
-                    type: 'monsterHPUpdate',
-                    hp: monsterHP
-                    }));
-                }
-        }
     });
 
     // 切断時
@@ -64,11 +53,6 @@ function broadcast(message) {
             client.send(message);
         }
     });
-}
-
-// 衝突判定
-function isCollision(x1, y1, x2, y2) {
-    return Math.abs(x1 - x2) < 50 && Math.abs(y1 - y2) < 50;
 }
 
 // 定期的にモンスターの位置を更新して全員に送信
