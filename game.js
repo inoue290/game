@@ -105,10 +105,11 @@ function create() {
                 monster.setCollideWorldBounds(true);  // モンスターが画面外に出ないように
                 monster.setBounce(1);  // モンスターの反発を有効にする
                 // プレイヤーとモンスターの衝突判定
-                this.physics.add.collider(player, monster, handleCollision, null, this);
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
+            // プレイヤーとモンスターの衝突判定
+           this.physics.add.collider(player, monster, handleCollision, null, this);
         }
     }
 
