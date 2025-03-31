@@ -71,19 +71,6 @@ function create() {
 
     socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
 
-    // プレイヤーとモンスターのHPラベルを表示
-    const playerHpLabel = this.add.text(player.x, player.y + 50, `HP: ${playerHp}`, {
-        fontSize: '20px',
-        fill: '#FFFFFF',
-        align: 'center'
-    }).setOrigin(0.5, 0.5);
-
-    const monsterHpLabel = this.add.text(monster.x, monster.y + 50, `HP: ${monsterHp}`, {
-        fontSize: '20px',
-        fill: '#FF0000',
-        align: 'center'
-    }).setOrigin(0.5, 0.5);
-
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -95,6 +82,12 @@ function create() {
             player.setCollideWorldBounds(true);  // 画面外に出ないように設定
             player.setBounce(1);  // 画面の端に当たったときの反発を有効にする
             players[playerId] = player;  // プレイヤーオブジェクトを保存
+            // プレイヤーのHPラベルを設定
+            const playerHpLabel = this.add.text(player.x, player.y + 50, `HP: ${playerHp}`, {
+                fontSize: '20px',
+                fill: '#FFFFFF',
+                align: 'center'
+            }).setOrigin(0.5, 0.5);
 
             // プレイヤー同士、プレイヤーとモンスターの衝突判定を設定
             this.physics.add.collider(player, monster, handleCollision, null, this);
@@ -103,13 +96,6 @@ function create() {
                     this.physics.add.collider(player, players[id], handleCollision, null, this);
                 }
             }
-
-            // プレイヤーHPラベルの設定
-            playerHpLabel = this.add.text(player.x, player.y + 50, `HP: ${playerHp}`, {
-                fontSize: '20px',
-                fill: '#FFFFFF',
-                align: 'center'
-            }).setOrigin(0.5, 0.5);
 
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置を更新
