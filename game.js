@@ -183,6 +183,10 @@ let monsterSpeed = 2;  // モンスターの移動速度
 let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
 function update() {
+    if (!player) {
+        return;  // プレイヤーがまだ初期化されていない場合、更新をスキップ
+    }
+
     // プレイヤー移動処理
     if (cursors.left.isDown) {
         player.setVelocityX(-160);  // 左移動
@@ -217,7 +221,6 @@ function update() {
         }));
     }
 }
-
 
 // 他のプレイヤーの位置を更新する関数
 function updatePlayers(scene, playersData) {
