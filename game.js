@@ -85,6 +85,11 @@ function create() {
             players[playerId] = player;  // プレイヤーオブジェクトを保存
             // プレイヤーのHPテキストを表示
             let playerHPText = this.add.text(player.x, player.y - player.height / 2 - 20, `HP: ${playerHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
+            // プレイヤーの位置が動くたびにHPテキストの位置を更新
+            this.physics.world.on('worldstep', () => {
+                playerHPText.setPosition(player.x, player.y - player.height / 2 - 20);
+            });
+
 
             // プレイヤー同士、プレイヤーとモンスターの衝突判定を設定
             this.physics.add.collider(player, monster, handleCollision, null, this);
@@ -111,6 +116,12 @@ function create() {
             }
             // モンスターのHP表示
             let monsterHPText = this.add.text(monster.x, monster.y - monster.height / 2 - 20, `HP: ${monsterHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
+            
+            // モンスターの位置が動くたびにHPテキストの位置を更新
+            this.physics.world.on('worldstep', () => {
+                monsterHPText.setPosition(monster.x, monster.y - monster.height / 2 - 20);
+            });
+
         }
     }
 
