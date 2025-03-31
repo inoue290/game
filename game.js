@@ -70,7 +70,7 @@ function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
 
-    socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
+    socket = new WebSocket('ws://localhost:8080');  // WebSocket接続の確立
 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
@@ -86,11 +86,6 @@ function create() {
 
             // プレイヤー同士、プレイヤーとモンスターの衝突判定を設定
             this.physics.add.collider(player, monster, handleCollision, null, this);
-            for (let id in players) {
-                if (id !== playerId) {
-                    this.physics.add.collider(player, players[id], handleCollision, null, this);
-                }
-            }
 
             // HPテキストの表示
             playerHPText = this.add.text(player.x, player.y + 20, 'HP: ' + playerHP, { fontSize: '20px', fill: '#fff' });
@@ -111,8 +106,9 @@ function create() {
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
-                 // モンスターのHPテキストを更新
-                monsterHPText.setText('HP: ' + monsterHP);
+
+            // モンスターのHPテキストを更新
+            monsterHPText.setText('HP: ' + monsterHP);
         }
     }
 
