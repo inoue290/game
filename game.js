@@ -55,6 +55,9 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
+// 各キャラクターのHPを保持するオブジェクト
+let playerHP = 100;
+let monsterHP = 100;
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -80,6 +83,8 @@ function create() {
             player.setCollideWorldBounds(true);  // 画面外に出ないように設定
             player.setBounce(1);  // 画面の端に当たったときの反発を有効にする
             players[playerId] = player;  // プレイヤーオブジェクトを保存
+            // プレイヤーのHPテキストを表示
+            let playerHPText = this.add.text(player.x, player.y - player.height / 2 - 20, `HP: ${playerHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
 
             // プレイヤー同士、プレイヤーとモンスターの衝突判定を設定
             this.physics.add.collider(player, monster, handleCollision, null, this);
@@ -104,6 +109,8 @@ function create() {
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
+            // モンスターのHP表示
+            let monsterHPText = this.add.text(monster.x, monster.y - monster.height / 2 - 20, `HP: ${monsterHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
         }
     }
 
