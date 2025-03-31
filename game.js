@@ -55,9 +55,6 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
-let playerHP = 100;  // プレイヤーの初期HP
-let monsterHP = 100;  // モンスターの初期HP
-let playerHPText, monsterHPText;  // HP表示用テキスト
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -70,7 +67,7 @@ function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
 
-    socket = new WebSocket('ws://localhost:8080');  // WebSocket接続の確立
+    socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
@@ -86,10 +83,11 @@ function create() {
 
             // プレイヤー同士、プレイヤーとモンスターの衝突判定を設定
             this.physics.add.collider(player, monster, handleCollision, null, this);
-
-            // HPテキストの表示
-            playerHPText = this.add.text(player.x, player.y + 20, 'HP: ' + playerHP, { fontSize: '20px', fill: '#fff' });
-            monsterHPText = this.add.text(monster.x, monster.y + 20, 'HP: ' + monsterHP, { fontSize: '20px', fill: '#fff' });
+            for (let id in players) {
+                if (id !== playerId) {
+                    this.physics.add.collider(player, players[id], handleCollision, null, this);
+                }
+            }
 
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置を更新
@@ -106,9 +104,6 @@ function create() {
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
-
-            // モンスターのHPテキストを更新
-            monsterHPText.setText('HP: ' + monsterHP);
         }
     }
 
@@ -121,7 +116,6 @@ function create() {
             const x = pointer.x;
             const y = pointer.y;
             player.setPosition(x, y);  // プレイヤーの位置をタッチ位置に設定
-            playerHPText.setPosition(x, y + 20);  // HPテキストをプレイヤーの下に表示
             socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
@@ -145,20 +139,6 @@ function handleCollision(player, other) {
             attackEffect.setAlpha(0);  // 透明にする
             attackEffect.destroy();  // エフェクトを削除
         });
-
-        // プレイヤーのHPを減らす処理
-        playerHP -= 10;
-        if (playerHP < 0) playerHP = 0;
-
-        // プレイヤーのHPを更新
-        playerHPText.setText('HP: ' + playerHP);
-
-        // モンスターのHPを減らす処理
-        monsterHP -= 1;
-        if (monsterHP < 0) monsterHP = 0;
-
-        // モンスターのHPを更新
-        monsterHPText.setText('HP: ' + monsterHP);
 
         // サーバーに攻撃エフェクトの情報を送信
         socket.send(JSON.stringify({
@@ -216,9 +196,6 @@ function update() {
         // モンスターを移動
         monster.x += monsterMoveDirection.x * monsterSpeed;
         monster.y += monsterMoveDirection.y * monsterSpeed;
-
-        // モンスターのHPテキストを更新
-        monsterHPText.setText('HP: ' + monsterHP);
 
         // 画面外に出ないようにモンスターの位置を制限
         monster.x = Phaser.Math.Clamp(monster.x, 0, window.innerWidth);
