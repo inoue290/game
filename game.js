@@ -84,7 +84,7 @@ function create() {
             player.setBounce(1);  // 画面の端に当たったときの反発を有効にする
             players[playerId] = player;  // プレイヤーオブジェクトを保存
             // プレイヤーのHPテキストを表示
-            let playerHPText = this.add.text(player.x, player.y + player.height / 2 - 20, `HP: ${playerHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
+            let playerHPText = this.add.text(player.x, player.y + player.height / 2 + 20, `HP: ${playerHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
             // プレイヤーの位置が動くたびにHPテキストの位置を更新
             this.physics.world.on('worldstep', () => {
                 playerHPText.setPosition(player.x, player.y - player.height / 2 - 20);
@@ -115,7 +115,7 @@ function create() {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
             // モンスターのHP表示
-            let monsterHPText = this.add.text(monster.x, monster.y + monster.height / 2 - 20, `HP: ${monsterHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
+            let monsterHPText = this.add.text(monster.x, monster.y + monster.height / 2 + 20, `HP: ${monsterHP}`, { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5, 1);
             
             // モンスターの位置が動くたびにHPテキストの位置を更新
             this.physics.world.on('worldstep', () => {
@@ -170,6 +170,27 @@ function handleCollision(player, other) {
                 monsterHP: monsterHP
             }));
         }
+
+        // サーバーからのHP更新を受け取る処理
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+        
+            if (data.type === 'hpUpdate') {
+                // サーバーからプレイヤーとモンスターのHPを更新
+                playerHP = data.playerHP;
+                monsterHP = data.monsterHP;
+        
+                // プレイヤーのHP表示を更新
+                if (player) {
+                    playerHPText.setText(`HP: ${playerHP}`);
+                }
+        
+                // モンスターのHP表示を更新
+                if (monster) {
+                    monsterHPText.setText(`HP: ${monsterHP}`);
+                }
+            }
+        };
 
         // サーバーに攻撃エフェクトの情報を送信
         socket.send(JSON.stringify({
