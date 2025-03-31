@@ -55,9 +55,6 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
-let playerHP = 100;  // プレイヤーの初期HP
-let monsterHP = 100; // モンスターの初期HP
-let playerHPText, monsterHPText; // HP表示用ラベル
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -69,11 +66,9 @@ function preload() {
 function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
-    // HP ラベルの作成
-    playerHPText = this.add.text(10, 10, `Player HP: ${playerHP}`, { fontSize: '20px', fill: '#fff' });
-    monsterHPText = this.add.text(10, 40, `Monster HP: ${monsterHP}`, { fontSize: '20px', fill: '#fff' });
-    // WebSocket接続の確立
-    socket = new WebSocket('wss://game-7scn.onrender.com'); 
+
+    socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
+
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -108,16 +103,7 @@ function create() {
                 this.physics.add.collider(player, monster, handleCollision, null, this);
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
-            } else if (data.type === 'updatePlayerHP') {
-            // プレイヤーのHPを受信して更新
-            playerHP = data.hp;
-            playerHPText.setText(`Player HP: ${playerHP}`);
-        }
-            // モンスターのHPを受信して更新
-            if (data.type === 'updateMonsterHP') {
-                monsterHP = data.hp;
-                monsterHPText.setText(`Monster HP: ${monsterHP}`);
-            }  
+            }
         }
     }
 
@@ -133,18 +119,6 @@ function create() {
             socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
-}
-
-// HPの更新処理
-function updateHPDisplay() {
-    playerHPText.setText(`Player HP: ${playerHP}`);
-    monsterHPText.setText(`Monster HP: ${monsterHP}`);
-    
-    // プレイヤーのHPラベルをプレイヤーキャラクターの真下に配置
-    playerHPText.setPosition(player.x, player.y + 30); // プレイヤーの下に表示
-
-    // モンスターのHPラベルをモンスターキャラクターの真下に配置
-    monsterHPText.setPosition(monster.x, monster.y + 30); // モンスターの下に表示
 }
 
 // 衝突時のエフェクトを処理する関数
@@ -165,17 +139,6 @@ function handleCollision(player, other) {
             attackEffect.setAlpha(0);  // 透明にする
             attackEffect.destroy();  // エフェクトを削除
         });
-    
-        // HPを減少させる
-        if (other === monster) {
-            monsterHP -= 1;  // モンスターに攻撃した場合
-            playerHP -= 10; //プレイヤーの受けるダメージ
-            monsterHPText.setText(`Monster HP: ${monsterHP}`);
-            playerHPText.setText(`Player HP: ${playerHP}`);
-        } else if (other === player) {
-            playerHP -= 10;  // プレイヤーのHPを減らす
-            playerHPText.setText(`Player HP: ${playerHP}`);
-        }
 
         // サーバーに攻撃エフェクトの情報を送信
         socket.send(JSON.stringify({
@@ -184,53 +147,10 @@ function handleCollision(player, other) {
             y: player.y
         }));
 
-        // HPが0になったら処理
-        if (playerHP <= 0) {
-            alert("ぶっ殺されました");
-            
-            // サーバーにプレイヤーの死亡情報を送信
-            socket.send(JSON.stringify({
-                type: 'playerDead',
-                playerId: playerId
-            }));
-
-            socket.close(); // WebSocketを切断
-            location.reload(); // ページをリロード（サーバー側で処理するなら不要）
-        }
-
-        if (monsterHP <= 0) {
-            monster.destroy(); // モンスターを削除
-            monsterHPText.setText("Monster HP: 0 (Defeated)");
-
-            // サーバーにモンスターの死亡情報を送信
-            socket.send(JSON.stringify({
-                type: 'monsterDead',
-                monsterId: monster.id // モンスターごとにIDがあるなら指定
-            }));
-        }
-
-
         // 最後の衝突時間を記録
         lastCollisionTime = currentTime;
     }
 }
-
-// サーバーとの通信でHPを同期
-socket.onmessage = function(event) {
-    let data = JSON.parse(event.data);
-
-    // プレイヤーのHPを受信して更新
-    if (data.type === 'updatePlayerHP') {
-        playerHP = data.hp;
-        playerHPText.setText(`Player HP: ${playerHP}`);
-    }
-
-    // モンスターのHPを受信して更新
-    if (data.type === 'updateMonsterHP') {
-        monsterHP = data.hp;
-        monsterHPText.setText(`Monster HP: ${monsterHP}`);
-    }
-};
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
@@ -238,9 +158,8 @@ let monsterSpeed = 2;  // モンスターの移動速度
 let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
 function update() {
-    if (!player || !monster) return;  // プレイヤーとモンスターが存在しない場合は何も処理しない
-    updateHPDisplay();  // HPラベルの位置を更新
-    
+    if (!player) return;  // プレイヤーがいない場合は何も処理しない
+
     let speed = 3;
     let moved = false;
     let x = player.x, y = player.y;
