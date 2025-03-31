@@ -55,6 +55,9 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
+let playerHP = 100;  // プレイヤーの初期HP
+let monsterHP = 100; // モンスターの初期HP
+let playerHPText, monsterHPText; // HP表示用ラベル
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -66,9 +69,11 @@ function preload() {
 function create() {
     // 背景画像の設定
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
-
-    socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
-
+    // HP ラベルの作成
+    playerHPText = this.add.text(10, 10, `Player HP: ${playerHP}`, { fontSize: '20px', fill: '#fff' });
+    monsterHPText = this.add.text(10, 40, `Monster HP: ${monsterHP}`, { fontSize: '20px', fill: '#fff' });
+    // WebSocket接続の確立
+    socket = new WebSocket('wss://game-7scn.onrender.com'); 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -139,6 +144,15 @@ function handleCollision(player, other) {
             attackEffect.setAlpha(0);  // 透明にする
             attackEffect.destroy();  // エフェクトを削除
         });
+    
+        // HPを減少させる
+        if (other === monster) {
+            monsterHP -= 1;
+            monsterHPText.setText(`Monster HP: ${monsterHP}`);
+        } else {
+            playerHP -= 10;
+            playerHPText.setText(`Player HP: ${playerHP}`);
+        }
 
         // サーバーに攻撃エフェクトの情報を送信
         socket.send(JSON.stringify({
@@ -146,6 +160,32 @@ function handleCollision(player, other) {
             x: player.x,
             y: player.y
         }));
+
+        // HPが0になったら処理
+        if (playerHP <= 0) {
+            alert("You died! Logging out...");
+            
+            // サーバーにプレイヤーの死亡情報を送信
+            socket.send(JSON.stringify({
+                type: 'playerDead',
+                playerId: playerId
+            }));
+
+            socket.close(); // WebSocketを切断
+            // location.reload(); // ページをリロード（サーバー側で処理するなら不要）
+        }
+
+        if (monsterHP <= 0) {
+            monster.destroy(); // モンスターを削除
+            monsterHPText.setText("Monster HP: 0 (Defeated)");
+
+            // サーバーにモンスターの死亡情報を送信
+            socket.send(JSON.stringify({
+                type: 'monsterDead',
+                monsterId: monster.id // モンスターごとにIDがあるなら指定
+            }));
+        }
+
 
         // 最後の衝突時間を記録
         lastCollisionTime = currentTime;
