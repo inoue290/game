@@ -13,9 +13,11 @@ server.on('connection', (socket) => {
 
     // 新しいプレイヤーIDを生成
     const playerId = Math.random().toString(36).substring(2, 10);
-    players[playerId] = { x: 400, y: 300 };
+    players[playerId] = { x: 400, y: 300, hp: 100};
     //サーバーへID転送
-    socket.send(JSON.stringify({ type: 'welcome', id: playerId }));
+    socket.send(JSON.stringify({ type: 'welcome', id: playerId, hp: players[playerId].hp }));
+    // 他のプレイヤーに通知
+    broadcast(JSON.stringify({ type: 'update', players }));
 
     // メッセージを受信
     socket.on('message', (message) => {
@@ -45,6 +47,41 @@ server.on('connection', (socket) => {
     });
 });
 
+//攻撃時の処理
+if (data.type === 'attack') {
+    const damage = 10;  // ダメージ量
+
+    if (data.target === 'monster') {
+        // モンスターのHPを減らす
+        monsterHP -= damage;
+        console.log(`👹 モンスターのHP: ${monsterHP}`);
+
+        // HPを全プレイヤーに通知
+        broadcast(JSON.stringify({ type: 'updateMonsterHP', hp: Math.max(0, monsterHP) }));
+
+        // モンスターが死亡した場合
+        if (monsterHP <= 0) {
+            broadcast(JSON.stringify({ type: 'monsterDead' }));
+        }
+    }
+
+    if (data.target === 'player' && players[data.playerId]) {
+        // プレイヤーのHPを減らす
+        players[data.playerId].hp -= damage;
+        console.log(`🎮 プレイヤー ${data.playerId} のHP: ${players[data.playerId].hp}`);
+
+        // HPを全プレイヤーに通知
+        broadcast(JSON.stringify({ type: 'updatePlayerHP', playerId: data.playerId, hp: Math.max(0, players[data.playerId].hp) }));
+
+        // HPが0以下になったら削除
+        if (players[data.playerId].hp <= 0) {
+            broadcast(JSON.stringify({ type: 'playerDead', playerId: data.playerId }));
+            delete players[data.playerId];  // プレイヤー削除
+        }
+    }
+}
+
+
 // すべてのクライアントにデータ送信
 function broadcast(message) {
     server.clients.forEach(client => {
@@ -59,6 +96,14 @@ setInterval(() => {
     // モンスターのランダムな動きを設定
     monsterPosition.x += Math.random() * 20 - 10;  // ランダムに位置を変更
     monsterPosition.y += Math.random() * 20 - 10;
+
+    //定期的にモンスターのHPをクライアントに送信
+    setInterval(() => {
+        broadcast(JSON.stringify({
+            type: 'updateMonsterHP',
+            hp: monsterHP
+        }));
+    }, 1000);
 
     // モンスターの位置を全員に送信
     broadcast(JSON.stringify({
