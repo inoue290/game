@@ -32,11 +32,21 @@ server.on('connection', (socket) => {
             // 衝突エフェクトを追加
             const effect = { type: 'attack', x: data.x, y: data.y, timestamp: Date.now() };
             effects.push(effect);
-            // エフェクト情報を全員に送信
-            broadcast(JSON.stringify({ type: 'effect', effect }));
-        }
-
-    });
+        
+            // プレイヤーのHPやモンスターのHPを更新
+            playerHP -= 10;
+            if (playerHP < 0) playerHP = 0;
+        
+            monsterHP -= 10;
+            if (monsterHP < 0) monsterHP = 0;
+        
+            // エフェクト情報とHPの更新を全員に送信
+            broadcast(JSON.stringify({
+                type: 'effect',
+                effect,
+                playerHP, // プレイヤーのHPを送信
+                monsterHP // モンスターのHPを送信
+        }));
 
     // 切断時
     socket.on('close', () => {
