@@ -181,16 +181,53 @@ function handlePlayerLogout(player) {
     // ログアウト処理をここに追加
     // 例: プレイヤーをゲームから削除するなど
     player.setAlpha(0);  // プレイヤーを非表示にする
-    // 他にも必要な処理をここに書く
+    playerHPLabel.setAlpha(0);  // プレイヤーのHPラベルを非表示にする
+    window.location.href = 'https://inoue290.github.io/game/index.html';  // ここにリダイレクトしたいURLを指定
 }
 
 // モンスターがHP0になった場合の消去処理
 function handleMonsterDeath(monster) {
     console.log("モンスターがHP0で消えます");
-    // モンスター消去処理
+    // モンスターとラベルを非表示にする
     monster.setAlpha(0);  // モンスターを非表示にする
-    // 他にも必要な処理をここに書く
+    monster.setActive(false);  // モンスターを非アクティブにする
+    monster.setVisible(false);  // モンスターを見えなくする
+    // モンスターのHPラベルを非表示にする
+    monsterHPLabel.setAlpha(0);  // モンスターのHPラベルを非表示にする
+    // ここでモンスターの再生成を行う
+    regenerateMonster(monster);
 }
+
+// モンスターの再生成処理
+function regenerateMonster(monster) {
+    console.log("モンスターが再生成されます");
+
+    // モンスターの位置をランダムに設定（もしくは任意の位置を指定）
+    let newX = Phaser.Math.Between(100, 800);  // 例: 画面内のランダムな位置
+    let newY = Phaser.Math.Between(100, 600);
+
+    // 新しいモンスターを生成
+    let newMonster = this.physics.add.sprite(newX, newY, 'monster');  // 'monster'はモンスターのスプライトの名前です
+
+    // 必要なモンスター設定
+    newMonster.setAlpha(1);  // モンスターを表示する
+    newMonster.setActive(true);  // モンスターをアクティブにする
+    newMonster.setVisible(true); // モンスターを可視化
+
+    // モンスターのHPラベルも再生成
+    let monsterHPLabel = this.add.text(newX, newY - 20, 'HP: 100', {
+        fontSize: '16px',
+        fill: '#ff0000'
+    });
+    
+    // 必要なモンスターのプロパティを設定（例えばHPなど）
+    monsterHP = 100;  // 新しいモンスターのHPを設定
+
+    // モンスター再生成後に必要な追加処理
+    // 例えば、再生成されたモンスターを追跡するためのリストに追加
+    monster = newMonster;  // ここで、再生成されたモンスターを現在のモンスターとして設定
+}
+
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
