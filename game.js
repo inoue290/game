@@ -158,12 +158,18 @@ function handleCollision(player, other) {
         y: player.y
     }));
 
-    // プレイヤーまたはモンスターのHPを減少
+    // モンスターがプレイヤーに衝突した場合
     if (other === monster) {
-        monsterHP -= 1;  // モンスターのHPを減少
-    } else if (other === player) {
-        playerHP -= 10;  // プレイヤーのHPを減少
+        monsterHP -= 1;  // モンスターのHPを1減少
+        playerHP -= 10;  // プレイヤーのHPを10減少
     }
+    // プレイヤーがモンスターに衝突した場合
+    else if (other === player) {
+        monsterHP -= 10;  // モンスターのHPを10減少
+        playerHP -= 1;    // プレイヤーのHPを1減少
+    }
+    // 衝突した後にHPを更新する場合（例えばHPバーなどを更新）
+    updateHPDisplay();  // ここでHP表示を更新する関数を呼び出す
 }
 
 // モンスターのランダムな動きとサーバーへの送信
