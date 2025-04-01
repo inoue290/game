@@ -140,6 +140,29 @@ function create() {
             socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
+
+    // サーバーからのプレイヤー情報更新を受け取る
+    socket.on('update', (data) => {
+        // 他のプレイヤーの位置とHPを更新
+        if (data.id !== playerId) { // 自分以外のプレイヤーに対して更新
+            if (!players[data.id]) {
+                // 新しいプレイヤーが追加される場合
+                players[data.id] = scene.physics.add.sprite(data.x, data.y, 'player');
+                // プレイヤーとモンスターの衝突判定を設定
+                scene.physics.add.collider(players[data.id], monster, handleCollision, null, scene);
+                // HPラベルの作成
+                players[data.id].hpLabel = scene.add.text(data.x, data.y - 20, `HP: ${data.hp}`, {
+                    fontSize: '16px',
+                    fill: '#fff'
+                });
+            } else {
+                // 既存のプレイヤーの位置を更新
+                players[data.id].setPosition(data.x, data.y);
+                // HPラベルを更新
+                players[data.id].hpLabel.setText(`HP: ${data.hp}`);
+            }
+        }
+    });
 }
 
 // 衝突時のエフェクトを処理する関数
