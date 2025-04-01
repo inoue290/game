@@ -310,6 +310,8 @@ function updatePlayers(scene, playersData) {
             players[id].hpLabel.setText(`HP: ${playersData[id].hp}`);
         }
     }
-    
+
+    // サーバーへHP情報を送信
+    socket.emit('updatePlayerInfo', { id: playerId, x: playersData[playerId].x, y: playersData[playerId].y, hp: playersData[playerId].hp });
 }
 
