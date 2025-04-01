@@ -167,6 +167,23 @@ function handleCollision(player, other) {
          playerHP -= 1;  // プレイヤーのHPを減少
     }
 
+    // サーバーからHPの更新情報を受け取る
+    socket.on('hpUpdate', (data) => {
+        // プレイヤーのHPが更新された場合
+        if (data.id === playerId) {
+            playerHP = data.hp; // プレイヤーのHPを更新
+            monsterHP = data.hp;
+        }
+        // プレイヤーのHPラベルを更新
+        if (playerHPLabel) {
+            playerHPLabel.setText(`HP: ${playerHP}`);
+        }
+        // モンスターのHPラベルを更新
+        if (monsterHPLabel) {
+            monsterHPLabel.setText(`HP: ${monsterHP}`);
+        }
+    });
+
     // プレイヤーHPが0になった場合、ログアウト
     if (playerHP <= 0) {
         handlePlayerLogout(player);  // プレイヤーをログアウト
