@@ -161,7 +161,7 @@ function handleCollision(player, other) {
     // モンスターと接触した場合HPを減少
     if (other === monster) {
         monsterHP -= 1;  // モンスターのHPを減少
-         playerHP -= 10;  // プレイヤーのHPを減少
+         playerHP -= 0.1;  // プレイヤーのHPを減少
     }
 
     // プレイヤーHPが0になった場合、ログアウト
