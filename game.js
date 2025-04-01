@@ -123,7 +123,7 @@ function create() {
                     align: 'center'
                 }).setOrigin(0.5);
         }
-    };
+    }};
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
