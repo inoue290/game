@@ -154,12 +154,6 @@ function handleCollision(player, other) {
         attackEffect.setAlpha(0);  // 透明にする
         attackEffect.destroy();  // エフェクトを削除
     });
-        // サーバーに攻撃エフェクトの情報を送信
-    socket.send(JSON.stringify({
-        type: 'attackEffect',
-        x: player.x,
-        y: player.y
-    }));
 
     // モンスターと接触した場合HPを減少
     if (other === monster) {
