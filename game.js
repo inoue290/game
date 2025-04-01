@@ -155,11 +155,9 @@ function handleMonsterDeath(monster) {
     monster.setAlpha(0);  // モンスターを非表示にする
     monster.setActive(false);  // モンスターを非アクティブにする
     monster.setVisible(false);  // モンスターを見えなくする
-    // モンスターのHPラベルを非表示にする
     monsterHPLabel.setAlpha(0);  // モンスターのHPラベルを非表示にする
     // ここでモンスターの再生成を行う
 }
-
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
