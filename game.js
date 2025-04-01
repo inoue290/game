@@ -165,22 +165,24 @@ function handleCollision(player, other) {
     if (other === monster) {
         monsterHP -= 2;  // モンスターのHPを減少
          playerHP -= 1;  // プレイヤーのHPを減少
+        // サーバーにプレイヤーとモンスターのHPを送信
+        socket.send(JSON.stringify({ type: 'hpUpdate', id: playerId, playerHP, monsterHP }));
     }
 
     // サーバーからHPの更新情報を受け取る
     socket.on('hpUpdate', (data) => {
-        // プレイヤーのHPが更新された場合
         if (data.id === playerId) {
-            playerHP = data.hp; // プレイヤーのHPを更新
-            monsterHP = data.hp;
+            playerHP = data.playerHP;  // プレイヤーのHPを更新
         }
+    
         // プレイヤーのHPラベルを更新
         if (playerHPLabel) {
             playerHPLabel.setText(`HP: ${playerHP}`);
         }
-        // モンスターのHPラベルを更新
+    
+        // モンスターのHPを更新（モンスターのHPはプレイヤーのものとは別に管理）
         if (monsterHPLabel) {
-            monsterHPLabel.setText(`HP: ${monsterHP}`);
+            monsterHPLabel.setText(`HP: ${data.monsterHP}`);
         }
     });
 
