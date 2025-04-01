@@ -200,7 +200,6 @@ function handleMonsterDeath(monster) {
 
 
 
-
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
 let monsterSpeed = 2;  // モンスターの移動速度
