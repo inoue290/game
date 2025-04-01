@@ -63,8 +63,13 @@ server.on('connection', (socket) => {
 
     // 他のプレイヤー情報更新
     socket.on('updatePlayerInfo', (data) => {
-        // 受け取った情報を全てのクライアントに送信
-        broadcast(JSON.stringify({ type: 'update', id: data.id, x: data.x, y: data.y, hp: data.hp }));
+        // 受け取った情報を全てのクライアントに送信（自分には送らない）
+        socket.broadcast.emit('update', { 
+            id: data.id, 
+            x: data.x, 
+            y: data.y, 
+            hp: data.hp 
+        });
     });
 
     // 切断時
