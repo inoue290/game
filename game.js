@@ -163,6 +163,33 @@ function handleCollision(player, other) {
         monsterHP -= 1;  // モンスターのHPを減少
          playerHP -= 10;  // プレイヤーのHPを減少
     }
+
+    // プレイヤーHPが0になった場合、ログアウト
+    if (playerHP <= 0) {
+        handlePlayerLogout(player);  // プレイヤーをログアウト
+    }
+
+     // モンスターHPが0になった場合、キャラクターを消去
+    if (monsterHP <= 0) {
+        handleMonsterDeath(monster);  // モンスターを消去
+    }
+}
+
+// プレイヤーがHP0になった場合のログアウト処理
+function handlePlayerLogout(player) {
+    console.log("プレイヤーがHP0でログアウトします");
+    // ログアウト処理をここに追加
+    // 例: プレイヤーをゲームから削除するなど
+    player.setAlpha(0);  // プレイヤーを非表示にする
+    // 他にも必要な処理をここに書く
+}
+
+// モンスターがHP0になった場合の消去処理
+function handleMonsterDeath(monster) {
+    console.log("モンスターがHP0で消えます");
+    // モンスター消去処理
+    monster.setAlpha(0);  // モンスターを非表示にする
+    // 他にも必要な処理をここに書く
 }
 
 // モンスターのランダムな動きとサーバーへの送信
