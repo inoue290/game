@@ -34,7 +34,7 @@ server.on('connection', (socket) => {
             broadcast(JSON.stringify({ type: 'effect', effect }));
 
             // モンスターのHPを減少させる
-            if (data.target === 'monster') {
+            if (data.target === 'player') {
                 monsterHP -= 10;
                 if (monsterHP < 0) monsterHP = 0;  
 
