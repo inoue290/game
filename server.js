@@ -5,6 +5,7 @@ const server = new WebSocket.Server({ port: port, host: '0.0.0.0' });
 let players = {};
 let monsterPosition = { x: 400, y: 300 };  // モンスターの初期位置
 let effects = [];  // エフェクトを格納する配列
+let monsterHP = 100;  // 初期HPの設定
 
 server.on('connection', (socket) => {
     console.log('🚀 プレイヤーが接続');
@@ -34,7 +35,7 @@ server.on('connection', (socket) => {
             broadcast(JSON.stringify({ type: 'effect', effect }));
 
             //モンスターの値を10減らす
-            monsterHP -= 10;
+            monsterHP -= 1;
             if (monsterHP < 0) monsterHP = 0;  
 
             // モンスターの新しいHPを全員に送信
