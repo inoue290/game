@@ -170,6 +170,15 @@ function handleCollision(player, other) {
         socket.send(JSON.stringify({ type: 'hpUpdate', id: playerId, playerHP, monsterHP }));
     }
 
+    // サーバーからのプレイヤー情報更新を受け取る
+    socket.on('update', (data) => {
+        // プレイヤーの位置とHPを更新
+        if (players[data.id]) {
+            players[data.id].setPosition(data.x, data.y);
+            players[data.id].hpLabel.setText(`HP: ${data.hp}`);
+        }
+    });
+
     // プレイヤーHPが0になった場合、ログアウト
     if (playerHP <= 0) {
         handlePlayerLogout(player);  // プレイヤーをログアウト
