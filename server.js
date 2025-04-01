@@ -26,6 +26,10 @@ server.on('connection', (socket) => {
         
         if (data.type === 'move') {
             players[data.id] = { x: data.x, y: data.y, hp: data.hp };
+
+            // HPが変更されたことを全てのクライアントに通知
+            broadcast(JSON.stringify({ type: 'hpUpdate', id: data.id, hp: data.hp }));
+            
             // 他のクライアントに送信
             broadcast(JSON.stringify({ type: 'update', players }));
         }
