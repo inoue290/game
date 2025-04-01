@@ -33,17 +33,15 @@ server.on('connection', (socket) => {
             // エフェクト情報を全員に送信
             broadcast(JSON.stringify({ type: 'effect', effect }));
 
-            // モンスターのHPを減少させる
-            if (data.target === 'player') {
-                monsterHP -= 10;
-                if (monsterHP < 0) monsterHP = 0;  
+            //モンスターの値を10減らす
+            monsterHP -= 10;
+            if (monsterHP < 0) monsterHP = 0;  
 
-                // モンスターの新しいHPを全員に送信
-                broadcast(JSON.stringify({
-                    type: 'monsterHPUpdate',
-                    monsterHP
-                }));
-            }
+            // モンスターの新しいHPを全員に送信
+            broadcast(JSON.stringify({
+                type: 'monsterHPUpdate',
+                monsterHP
+            }));
         }
     });
 
