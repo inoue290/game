@@ -55,6 +55,9 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
+let playerHP = 100;  // プレイヤーのHP
+let monsterHP = 100; // モンスターのHP
+let playerHPLabel, monsterHPLabel;  // HPラベルを格納する変数
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -89,6 +92,13 @@ function create() {
                 }
             }
 
+            // プレイヤーのHPラベルを表示
+            playerHPLabel = this.add.text(player.x, player.y - player.height / 2 - 20, `HP: ${playerHP}`, {
+                font: '16px Arial',
+                fill: '#ffffff',
+                align: 'center'
+            }).setOrigin(0.5);
+
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置を更新
             updatePlayers(this, data.players);
@@ -104,6 +114,14 @@ function create() {
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
+
+            // モンスターのHPラベルを表示
+            if (!monsterHPLabel) {
+                monsterHPLabel = this.add.text(monster.x, monster.y - monster.height / 2 - 20, `HP: ${monsterHP}`, {
+                    font: '16px Arial',
+                    fill: '#ffffff',
+                    align: 'center'
+                }).setOrigin(0.5);
         }
     };
 
@@ -139,6 +157,13 @@ function handleCollision(player, other) {
         x: player.x,
         y: player.y
     }));
+
+    // プレイヤーまたはモンスターのHPを減少
+    if (other === monster) {
+        monsterHP -= 1;  // モンスターのHPを減少
+    } else if (other === player) {
+        playerHP -= 10;  // プレイヤーのHPを減少
+    }
 }
 
 // モンスターのランダムな動きとサーバーへの送信
@@ -164,6 +189,18 @@ function update() {
     if (moved) {
         player.setPosition(x, y);
         socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
+    }
+
+    // プレイヤーのHPラベルをプレイヤーの位置に合わせて更新
+    if (playerHPLabel) {
+        playerHPLabel.setPosition(player.x, player.y - player.height / 2 - 20);
+        playerHPLabel.setText(`HP: ${playerHP}`);
+    }
+
+    // モンスターのHPラベルをモンスターの位置に合わせて更新
+    if (monster && monsterHPLabel) {
+        monsterHPLabel.setPosition(monster.x, monster.y - monster.height / 2 - 20);
+        monsterHPLabel.setText(`HP: ${monsterHP}`);
     }
 
     // モンスターの移動
