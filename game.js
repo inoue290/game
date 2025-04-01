@@ -34,10 +34,7 @@ function generateRandomString(length) {
     return result;
 }
 
-
-
-
-//ここから内容
+//ここから
 const config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
@@ -58,9 +55,8 @@ let player, monster;
 let players = {};  // 他のプレイヤーを管理するオブジェクト
 let cursors, socket, playerId;
 let attackEffectDuration = 500;  // 攻撃エフェクトの表示時間（ミリ秒）
-let playerHP = 100;  // プレイヤーのHP
-let monsterHP = 100; // モンスターのHP
-let playerHPLabel, monsterHPLabel;  // HPラベルを格納する変数
+let monsterHP = 100;  // モンスターのHP（初期値）
+let hpText; // モンスターHPの表示を追加
 
 function preload() {
     this.load.image('background', 'assets/background.png');  // 背景画像の読み込み
@@ -74,6 +70,9 @@ function create() {
     this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setOrigin(0.5, 0.5);  // 画面中央に配置
 
     socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
+
+    // モンスターHPのテキスト表示
+    hpText = this.add.text(20, 20, 'Monster HP: ' + monsterHP, { fontSize: '32px', fill: '#fff' });
 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
@@ -95,13 +94,6 @@ function create() {
                 }
             }
 
-            // プレイヤーのHPラベルを表示
-            playerHPLabel = this.add.text(player.x, player.y - player.height / 2 - 20, `HP: ${playerHP}`, {
-                font: '16px Arial',
-                fill: '#ffffff',
-                align: 'center'
-            }).setOrigin(0.5);
-
         } else if (data.type === 'update') {
             // 他のプレイヤーの位置を更新
             updatePlayers(this, data.players);
@@ -118,15 +110,13 @@ function create() {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
             }
 
-            // モンスターのHPラベルを表示
-            if (!monsterHPLabel) {
-                monsterHPLabel = this.add.text(monster.x, monster.y - monster.height / 2 - 20, `HP: ${monsterHP}`, {
-                    font: '16px Arial',
-                    fill: '#ffffff',
-                    align: 'center'
-                }).setOrigin(0.5);
+            // モンスターHPの更新
+            if (data.hp !== undefined) {
+            monsterHP = data.hp;
+            hpText.setText('Monster HP: ' + monsterHP);  // HPを表示する
+            }
         }
-    }};
+    }
 
     // プレイヤーの入力（移動）処理
     cursors = this.input.keyboard.createCursorKeys();
@@ -140,107 +130,56 @@ function create() {
             socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));  // プレイヤーの位置をサーバーに送信
         }
     });
-
-    // サーバーからのプレイヤー情報更新を受け取る
-    socket.on('update', (data) => {
-        // 他のプレイヤーの位置とHPを更新
-        if (data.id !== playerId) { // 自分以外のプレイヤーに対して更新
-            if (!players[data.id]) {
-                // 新しいプレイヤーが追加される場合
-                players[data.id] = scene.physics.add.sprite(data.x, data.y, 'player');
-                // プレイヤーとモンスターの衝突判定を設定
-                scene.physics.add.collider(players[data.id], monster, handleCollision, null, scene);
-                // HPラベルの作成
-                players[data.id].hpLabel = scene.add.text(data.x, data.y - 20, `HP: ${data.hp}`, {
-                    fontSize: '16px',
-                    fill: '#fff'
-                });
-            } else {
-                // 既存のプレイヤーの位置を更新
-                players[data.id].setPosition(data.x, data.y);
-                // HPラベルを更新
-                players[data.id].hpLabel.setText(`HP: ${data.hp}`);
-            }
-        }
-    });
 }
 
 // 衝突時のエフェクトを処理する関数
+let lastCollisionTime = 0;  // 最後の衝突イベントが発生した時間
+const collisionCooldown = 200;  // 衝突イベントの間隔（ミリ秒）
+
 function handleCollision(player, other) {
-    // 衝突した場合、攻撃エフェクトを表示
-    let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
-    attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
-    attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
+    let currentTime = this.time.now;
+    // 最後の衝突から200ミリ秒以上経過していたらエフェクトを表示
+    if (currentTime - lastCollisionTime >= collisionCooldown) {
+        // 衝突した場合、攻撃エフェクトを表示
+        let attackEffect = this.physics.add.sprite(player.x, player.y, 'attack');
+        attackEffect.setOrigin(0.5, 0.5);  // エフェクトの中心をプレイヤーの位置に合わせる
+        attackEffect.setAlpha(1);  // エフェクトを最初は完全に見えるように
 
-    // 0.5秒後にエフェクトを非表示にし、削除
-    this.time.delayedCall(attackEffectDuration, () => {
-        attackEffect.setAlpha(0);  // 透明にする
-        attackEffect.destroy();  // エフェクトを削除
-    });
+        // 0.5秒後にエフェクトを非表示にし、削除
+        this.time.delayedCall(attackEffectDuration, () => {
+            attackEffect.setAlpha(0);  // 透明にする
+            attackEffect.destroy();  // エフェクトを削除
+        });
 
-   // サーバーに攻撃エフェクトの情報を送信
-    socket.send(JSON.stringify({
-        type: 'attackEffect',
-        x: player.x,
-        y: player.y
-    }));
+        // モンスターHPを減らす処理（仮に10ダメージとする）
+        if (monster) {
+            monsterHP -= 10;
+            if (monsterHP < 0) monsterHP = 0;
 
-    // モンスターと接触した場合HPを減少
-    if (other === monster) {
-        monsterHP -= 2;  // モンスターのHPを減少
-         playerHP -= 1;  // プレイヤーのHPを減少
-        // サーバーにプレイヤーとモンスターのHPを送信
-        socket.send(JSON.stringify({ type: 'hpUpdate', id: playerId, playerHP, monsterHP }));
-    }
-
-    // サーバーからのプレイヤー情報更新を受け取る
-    socket.on('update', (data) => {
-        // プレイヤーの位置とHPを更新
-        if (players[data.id]) {
-            players[data.id].setPosition(data.x, data.y);
-            players[data.id].hpLabel.setText(`HP: ${data.hp}`);
+            // モンスターHPをサーバーに送信
+            socket.send(JSON.stringify({
+                type: 'updateMonsterHP',
+                hp: monsterHP
+            }));
         }
-    });
 
-    // プレイヤーHPが0になった場合、ログアウト
-    if (playerHP <= 0) {
-        handlePlayerLogout(player);  // プレイヤーをログアウト
+        // サーバーに攻撃エフェクトの情報を送信
+        socket.send(JSON.stringify({
+            type: 'attackEffect',
+            x: player.x,
+            y: player.y
+        }));
+
+        // 最後の衝突時間を記録
+        lastCollisionTime = currentTime;
     }
-
-     // モンスターHPが0になった場合、キャラクターを消去
-    if (monsterHP <= 0) {
-        handleMonsterDeath(monster);  // モンスターを消去
-    }
 }
-
-// プレイヤーがHP0になった場合のログアウト処理
-function handlePlayerLogout(player) {
-    console.log("プレイヤーがHP0でログアウトします");
-    // ログアウト処理をここに追加
-    // 例: プレイヤーをゲームから削除するなど
-    player.setAlpha(0);  // プレイヤーを非表示にする
-    playerHPLabel.setAlpha(0);  // プレイヤーのHPラベルを非表示にする
-    window.location.href = 'https://inoue290.github.io/game/index.html';  // ここにリダイレクトしたいURLを指定
-}
-
-// モンスターがHP0になった場合の消去処理
-function handleMonsterDeath(monster) {
-    console.log("モンスターがHP0で消えます");
-    monster.setAlpha(0);  // モンスターを非表示にする
-    monsterHPLabel.setAlpha(0);  // モンスターのHPラベルを非表示にする
-    // ここでモンスターの再生成を行う
-}
-
-
-
-
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
 let monsterSpeed = 2;  // モンスターの移動速度
 let changeDirectionCooldown = 1000;  // 方向転換の間隔（ミリ秒）
 let lastDirectionChangeTime = 0;  // 最後に方向転換した時間
-
 function update() {
     if (!player) return;  // プレイヤーがいない場合は何も処理しない
 
@@ -258,18 +197,6 @@ function update() {
     if (moved) {
         player.setPosition(x, y);
         socket.send(JSON.stringify({ type: 'move', id: playerId, x, y }));
-    }
-
-    // プレイヤーのHPラベルをプレイヤーの位置に合わせて更新
-    if (playerHPLabel) {
-        playerHPLabel.setPosition(player.x, player.y - player.height / 2 - 20);
-        playerHPLabel.setText(`HP: ${playerHP}`);
-    }
-
-    // モンスターのHPラベルをモンスターの位置に合わせて更新
-    if (monster && monsterHPLabel) {
-        monsterHPLabel.setPosition(monster.x, monster.y - monster.height / 2 - 20);
-        monsterHPLabel.setText(`HP: ${monsterHP}`);
     }
 
     // モンスターの移動
@@ -315,11 +242,6 @@ function updatePlayers(scene, playersData) {
                 players[id] = scene.physics.add.sprite(playersData[id].x, playersData[id].y, 'player');
                 // プレイヤーとモンスターの衝突判定を設定
                 scene.physics.add.collider(players[id], monster, handleCollision, null, scene);
-                // HPラベルの作成
-                players[id].hpLabel = scene.add.text(playersData[id].x, playersData[id].y - 20, `HP: ${playersData[id].hp}`, {
-                    fontSize: '16px',
-                    fill: '#fff'
-                });
             } else {
                 players[id].setPosition(playersData[id].x, playersData[id].y);
             }
@@ -330,20 +252,7 @@ function updatePlayers(scene, playersData) {
     for (let id in players) {
         if (!playersData[id]) {
             players[id].destroy();
-            if (players[id].hpLabel) players[id].hpLabel.destroy(); // HPラベルも削除
             delete players[id];
         }
     }
-    
-    // 既存のプレイヤーのHPラベルを更新
-    for (let id in players) {
-        if (players[id].hpLabel) {
-            players[id].hpLabel.setPosition(players[id].x, players[id].y - 20);
-            players[id].hpLabel.setText(`HP: ${playersData[id].hp}`);
-        }
-    }
-
-    // サーバーへHP情報を送信
-    socket.emit('updatePlayerInfo', { id: playerId, x: playersData[playerId].x, y: playersData[playerId].y, hp: playersData[playerId].hp });
 }
-
