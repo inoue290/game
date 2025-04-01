@@ -191,13 +191,15 @@ function handlePlayerLogout(player) {
 // モンスターがHP0になった場合の消去処理
 function handleMonsterDeath(monster) {
     console.log("モンスターがHP0で消えます");
-    // モンスターとラベルを非表示にする
-    monster.setAlpha(0);  // モンスターを非表示にする
-    monster.setActive(false);  // モンスターを非アクティブにする
-    monster.setVisible(false);  // モンスターを見えなくする
-    monsterHPLabel.setAlpha(0);  // モンスターのHPラベルを非表示にする
+    monster.destroy();  // モンスターをメモリから削除
+    monsterHPLabel.destroy();  // モンスターのHPラベルをメモリから削除
     // ここでモンスターの再生成を行う
 }
+
+
+
+
+
 
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
