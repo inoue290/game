@@ -1,5 +1,3 @@
-const WebSocket = require('ws');
-
 // RenderのPORT環境変数を使用してポートを指定
 const port = process.env.PORT || 3000;  // ポートが指定されていなければ3000を使用
 
@@ -7,10 +5,7 @@ const server = new WebSocket.Server({ port: port, host: '0.0.0.0' });
 let players = {};
 let monsterPosition = { x: 400, y: 300 };  // モンスターの初期位置
 let effects = [];  // エフェクトを格納する配列
-let monsterHP = 100;
 
-
-//受信と送信
 server.on('connection', (socket) => {
     console.log('🚀 プレイヤーが接続');
 
@@ -25,11 +20,7 @@ server.on('connection', (socket) => {
         const data = JSON.parse(message);
         
         if (data.type === 'move') {
-            players[data.id] = { x: data.x, y: data.y, hp: data.hp };
-
-            // HPが変更されたことを全てのクライアントに通知
-            broadcast(JSON.stringify({ type: 'hpUpdate', id: data.id, hp: data.hp }));
-            
+            players[data.id] = { x: data.x, y: data.y };
             // 他のクライアントに送信
             broadcast(JSON.stringify({ type: 'update', players }));
         }
@@ -39,37 +30,23 @@ server.on('connection', (socket) => {
             // 衝突エフェクトを追加
             const effect = { type: 'attack', x: data.x, y: data.y, timestamp: Date.now() };
             effects.push(effect);
+            
             // エフェクト情報を全員に送信
             broadcast(JSON.stringify({ type: 'effect', effect }));
-        }
-    });
 
-    // サーバーからHPの更新情報を受け取る
-    socket.on('hpUpdate', (data) => {
-        if (data.id === playerId) {
-            playerHP = data.playerHP;  // プレイヤーのHPを更新
-        }
-    
-        // プレイヤーのHPラベルを更新
-        if (playerHPLabel) {
-            playerHPLabel.setText(`HP: ${playerHP}`);
-        }
-    
-        // モンスターのHPを更新（モンスターのHPはプレイヤーのものとは別に管理）
-        if (monsterHPLabel) {
-            monsterHPLabel.setText(`HP: ${data.monsterHP}`);
-        }
-    });
+            // モンスターのHPを減少させる
+            if (data.target === 'monster') {
+                monsterHP -= 10;  // ここでモンスターに与えるダメージを設定
+                if (monsterHP < 0) monsterHP = 0;  // HPが0以下にならないように制限
 
-    // 他のプレイヤー情報更新
-    socket.on('updatePlayerInfo', (data) => {
-        // 受け取った情報を全てのクライアントに送信（自分には送らない）
-        socket.broadcast.emit('update', { 
-            id: data.id, 
-            x: data.x, 
-            y: data.y, 
-            hp: data.hp 
-        });
+                // モンスターの新しいHPを全員に送信
+                broadcast(JSON.stringify({
+                    type: 'monsterHPUpdate',
+                    monsterHP
+                }));
+            }
+        }
+
     });
 
     // 切断時
@@ -79,6 +56,15 @@ server.on('connection', (socket) => {
         broadcast(JSON.stringify({ type: 'update', players }));
     });
 });
+
+// すべてのクライアントにデータ送信
+function broadcast(message) {
+    server.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
 
 // 定期的にモンスターの位置を更新して全員に送信
 setInterval(() => {
@@ -105,14 +91,5 @@ setInterval(() => {
         broadcast(JSON.stringify({ type: 'effect', effect }));
     });
 }, 1000);  // 1秒ごとにエフェクトを更新
+
 console.log('✅ WebSocketサーバー起動！');
-
-
-// 全員へ送信する関数
-function broadcast(message) {
-    server.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
-}
