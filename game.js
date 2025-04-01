@@ -194,8 +194,8 @@ function handlePlayerLogout(player) {
 // モンスターがHP0になった場合の消去処理
 function handleMonsterDeath(monster) {
     console.log("モンスターがHP0で消えます");
-    monster.destroy();  // モンスターをメモリから削除
-    monsterHPLabel.destroy();  // モンスターのHPラベルをメモリから削除
+    monster.setAlpha(0);  // モンスターを非表示にする
+    monsterHPLabel.setAlpha(0);  // モンスターのHPラベルを非表示にする
     // ここでモンスターの再生成を行う
 }
 
