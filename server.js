@@ -44,6 +44,23 @@ server.on('connection', (socket) => {
         }
     });
 
+    // サーバーからHPの更新情報を受け取る
+    socket.on('hpUpdate', (data) => {
+        if (data.id === playerId) {
+            playerHP = data.playerHP;  // プレイヤーのHPを更新
+        }
+    
+        // プレイヤーのHPラベルを更新
+        if (playerHPLabel) {
+            playerHPLabel.setText(`HP: ${playerHP}`);
+        }
+    
+        // モンスターのHPを更新（モンスターのHPはプレイヤーのものとは別に管理）
+        if (monsterHPLabel) {
+            monsterHPLabel.setText(`HP: ${data.monsterHP}`);
+        }
+    });
+
     // 切断時
     socket.on('close', () => {
         console.log(`❌ プレイヤー ${playerId} が切断`);
