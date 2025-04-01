@@ -9,6 +9,8 @@ let monsterPosition = { x: 400, y: 300 };  // モンスターの初期位置
 let effects = [];  // エフェクトを格納する配列
 let monsterHP = 100;
 
+
+//受信と送信
 server.on('connection', (socket) => {
     console.log('🚀 プレイヤーが接続');
 
@@ -23,7 +25,7 @@ server.on('connection', (socket) => {
         const data = JSON.parse(message);
         
         if (data.type === 'move') {
-            players[data.id] = { x: data.x, y: data.y };
+            players[data.id] = { x: data.x, y: data.y, hp: data.hp };
             // 他のクライアントに送信
             broadcast(JSON.stringify({ type: 'update', players }));
         }
@@ -45,15 +47,6 @@ server.on('connection', (socket) => {
         broadcast(JSON.stringify({ type: 'update', players }));
     });
 });
-
-// すべてのクライアントにデータ送信
-function broadcast(message) {
-    server.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
-}
 
 // 定期的にモンスターの位置を更新して全員に送信
 setInterval(() => {
@@ -80,5 +73,14 @@ setInterval(() => {
         broadcast(JSON.stringify({ type: 'effect', effect }));
     });
 }, 1000);  // 1秒ごとにエフェクトを更新
-
 console.log('✅ WebSocketサーバー起動！');
+
+
+// 全員へ送信する関数
+function broadcast(message) {
+    server.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
