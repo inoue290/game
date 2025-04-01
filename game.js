@@ -195,11 +195,6 @@ function handleMonsterDeath(monster) {
     // モンスターのHPラベルを非表示にする
     monsterHPLabel.setAlpha(0);  // モンスターのHPラベルを非表示にする
     // ここでモンスターの再生成を行う
-    regenerateMonster(monster);
-}
-
-// モンスターの再生成処理
-function regenerateMonster(monster) {
     console.log("モンスターが再生成されます");
 
     // モンスターの位置をランダムに設定（もしくは任意の位置を指定）
