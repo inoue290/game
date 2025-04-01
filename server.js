@@ -55,6 +55,32 @@ server.on('connection', (socket) => {
     });
 });
 
+// 定期的にモンスターの位置を更新して全員に送信
+setInterval(() => {
+    // モンスターのランダムな動きを設定
+    monsterPosition.x += Math.random() * 20 - 10;  // ランダムに位置を変更
+    monsterPosition.y += Math.random() * 20 - 10;
+
+    // モンスターの位置を全員に送信
+    broadcast(JSON.stringify({
+        type: 'monsterPosition',
+        x: monsterPosition.x,
+        y: monsterPosition.y
+    }));
+}, 1000);  // 1秒ごとに更新
+
+// 定期的にエフェクトを更新して削除
+setInterval(() => {
+    // 1秒ごとに古いエフェクトを削除
+    const currentTime = Date.now();
+    effects = effects.filter(effect => currentTime - effect.timestamp < 1000);  // 1秒以内のエフェクトだけ残す
+
+    // 残ったエフェクトを全員に送信
+    effects.forEach(effect => {
+        broadcast(JSON.stringify({ type: 'effect', effect }));
+    });
+}, 1000);  // 1秒ごとにエフェクトを更新
+
 // すべてのクライアントにデータ送信
 function broadcast(message) {
     server.clients.forEach(client => {
