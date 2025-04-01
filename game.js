@@ -168,21 +168,7 @@ function handleCollision(player, other) {
         monsterHP -= 10;  // モンスターのHPを10減少
         playerHP -= 1;    // プレイヤーのHPを1減少
     }
-    // 衝突した後にHPを更新する場合（例えばHPバーなどを更新）
-    updateHPDisplay();  // ここでHP表示を更新する関数を呼び出す
-}
 
-// プレイヤーとモンスターのHPラベルを画面に表示するための関数
-function updateHPDisplay() {
-    // プレイヤーのHPを表示
-    if (playerHPText) {
-        playerHPText.setText('Player HP: ' + playerHP);
-    }
-
-    // モンスターのHPを表示
-    if (monsterHPText) {
-        monsterHPText.setText('Monster HP: ' + monsterHP);
-    }
 }
 
 // モンスターのランダムな動きとサーバーへの送信
