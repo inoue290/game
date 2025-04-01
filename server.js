@@ -34,7 +34,7 @@ server.on('connection', (socket) => {
             // エフェクト情報を全員に送信
             broadcast(JSON.stringify({ type: 'effect', effect }));
 
-            //モンスターの値を10減らす
+            //モンスターの値を1減らす
             monsterHP -= 1;
             if (monsterHP < 0) monsterHP = 0;  
 
