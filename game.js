@@ -281,6 +281,11 @@ function updatePlayers(scene, playersData) {
                 players[id] = scene.physics.add.sprite(playersData[id].x, playersData[id].y, 'player');
                 // プレイヤーとモンスターの衝突判定を設定
                 scene.physics.add.collider(players[id], monster, handleCollision, null, scene);
+                // HPラベルの作成
+                players[id].hpLabel = scene.add.text(playersData[id].x, playersData[id].y - 20, `HP: ${playersData[id].hp}`, {
+                    fontSize: '16px',
+                    fill: '#fff'
+                });
             } else {
                 players[id].setPosition(playersData[id].x, playersData[id].y);
             }
@@ -291,8 +296,18 @@ function updatePlayers(scene, playersData) {
     for (let id in players) {
         if (!playersData[id]) {
             players[id].destroy();
+            if (players[id].hpLabel) players[id].hpLabel.destroy(); // HPラベルも削除
             delete players[id];
         }
     }
+    
+    // 既存のプレイヤーのHPラベルを更新
+    for (let id in players) {
+        if (players[id].hpLabel) {
+            players[id].hpLabel.setPosition(players[id].x, players[id].y - 20);
+            players[id].hpLabel.setText(`HP: ${playersData[id].hp}`);
+        }
+    }
+    
 }
 
