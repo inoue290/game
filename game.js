@@ -172,6 +172,19 @@ function handleCollision(player, other) {
     updateHPDisplay();  // ここでHP表示を更新する関数を呼び出す
 }
 
+// プレイヤーとモンスターのHPラベルを画面に表示するための関数
+function updateHPDisplay() {
+    // プレイヤーのHPを表示
+    if (playerHPText) {
+        playerHPText.setText('Player HP: ' + playerHP);
+    }
+
+    // モンスターのHPを表示
+    if (monsterHPText) {
+        monsterHPText.setText('Monster HP: ' + monsterHP);
+    }
+}
+
 // モンスターのランダムな動きとサーバーへの送信
 let monsterMoveDirection = { x: 1, y: 0 };  // モンスターの初期方向
 let monsterSpeed = 2;  // モンスターの移動速度
