@@ -154,19 +154,17 @@ function handleCollision(player, other) {
         // モンスターHPを減らす処理（仮に1ダメージとする）
          monsterHP -= 1;
         if (monsterHP < 0) monsterHP = 0;
-        }
-    
-        // モンスターHPをサーバーに送信
-        socket.send(JSON.stringify({
-            type: 'updateMonsterHP',
-            hp: monsterHP
-        }));
-    
-        // サーバーに攻撃エフェクトの情報を送信
-        socket.send(JSON.stringify({
-            type: 'attackEffect',
-            x: player.x,
-            y: player.y
+            // モンスターHPをサーバーに送信
+            socket.send(JSON.stringify({
+                type: 'updateMonsterHP',
+                hp: monsterHP
+            }));
+
+            // サーバーに攻撃エフェクトの情報を送信
+            socket.send(JSON.stringify({
+                type: 'attackEffect',
+                x: player.x,
+                y: player.y
         }));
 
         // 最後の衝突時間を記録
