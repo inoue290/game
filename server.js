@@ -33,12 +33,11 @@ server.on('connection', (socket) => {
             
             // エフェクト情報を全員に送信
             broadcast(JSON.stringify({ type: 'effect', effect }));
-        }
-
-            //モンスターの値を1減らす
-        if (data.type === 'monsterHPUpdate') {
+            
+            // モンスターのHPを減らす処理
             monsterHP -= 1;
             if (monsterHP < 0) monsterHP = 0;  
+            
             // モンスターの新しいHPを全員に送信
             broadcast(JSON.stringify({
                 type: 'monsterHPUpdate',
