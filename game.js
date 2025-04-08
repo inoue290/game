@@ -156,7 +156,7 @@ function handleCollision(player, other) {
         if (monsterHP < 0) monsterHP = 0;
             // モンスターHPをサーバーに送信
             socket.send(JSON.stringify({
-                type: 'attack',
+                type: 'updateMonsterHP',
                 hp: monsterHP
             }));
 
