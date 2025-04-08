@@ -43,7 +43,7 @@ server.on('connection', (socket) => {
             // 全員に最新のHPを送る
             broadcast(JSON.stringify({
                 type: 'updateMonsterHP',
-                monsterHP
+                hp: monsterHP
             }));
         }
     });
