@@ -151,7 +151,9 @@ function handleCollision(player, other) {
             attackEffect.destroy();  // エフェクトを削除
         });
 
-            // モンスターHPをサーバーに送信
+            // モンスターHPを減らしてサーバーに送信
+             monsterHP -= 1;
+            if (monsterHP < 0) monsterHP = 0;
             socket.send(JSON.stringify({
                 type: 'updateMonsterHP',
                 hp: monsterHP
