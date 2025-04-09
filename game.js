@@ -111,11 +111,9 @@ function create() {
             }
 
             // モンスターHPの更新
-            else if (data.type === 'updateMonsterHP') {
+            if (data.hp !== undefined) {
                 monsterHP = data.hp;
-                if (hpText) {
-                    hpText.setText('Monster HP: ' + monsterHP);
-                }
+                hpText.setText('Monster HP: ' + monsterHP);  // HPを表示する
             }
         }
     }
