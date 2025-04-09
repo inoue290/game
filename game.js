@@ -77,6 +77,14 @@ function create() {
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        
+        // モンスターHPの更新
+        if (data.type === 'updateMonsterHP') {
+            monsterHP = data.hp;
+            if (hpText) {
+                hpText.setText('Monster HP: ' + monsterHP);
+            }
+        }
 
         if (data.type === 'welcome') {
             // サーバーからプレイヤーIDが送られてきた場合
@@ -108,12 +116,6 @@ function create() {
                 this.physics.add.collider(player, monster, handleCollision, null, this);
             } else {
                 monster.setPosition(data.x, data.y);  // モンスターの位置を更新
-            }
-
-            // モンスターHPの更新
-            if (data.hp !== undefined) {
-                monsterHP = data.hp;
-                hpText.setText('Monster HP: ' + monsterHP);  // HPを表示する
             }
         }
     }
