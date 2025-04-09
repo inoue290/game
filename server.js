@@ -5,7 +5,7 @@ const server = new WebSocket.Server({ port: port, host: '0.0.0.0' });
 let players = {};
 let monsterPosition = { x: 400, y: 300 };  // モンスターの初期位置
 let effects = [];  // エフェクトを格納する配列
-let monsterHP = {};
+let monsterHP = 100;
 
 server.on('connection', (socket) => {
     console.log('🚀 プレイヤーが接続');
