@@ -151,12 +151,11 @@ function handleCollision(player, other) {
             attackEffect.destroy();  // エフェクトを削除
         });
 
-            // モンスターHPを減らしてサーバーに送信
-             monsterHP -= 1;
-            if (monsterHP < 0) monsterHP = 0;
+            // 攻撃したよ！というだけを送る（HPは送らない）
             socket.send(JSON.stringify({
-                type: 'updateMonsterHP',
-                hp: monsterHP
+                type: 'attack',
+                x: player.x,
+                y: player.y
             }));
 
             // サーバーに攻撃エフェクトの情報を送信
