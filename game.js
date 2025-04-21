@@ -72,7 +72,10 @@ function create() {
     socket = new WebSocket('wss://game-7scn.onrender.com');  // WebSocket接続の確立
 
     // モンスターHPのテキスト表示
-    hpText = this.add.text(20, 20, 'Monster HP: ' + monsterHP, { fontSize: '32px', fill: '#fff' });
+    hpText = this.add.text(0, 0, 'Monster HP: ' + monsterHP, {
+        fontSize: '32px',
+        fill: '#fff'
+    });
 
     // WebSocketからのメッセージ処理
     socket.onmessage = (event) => {
