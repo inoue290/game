@@ -221,6 +221,14 @@ function update() {
         monster.x = Phaser.Math.Clamp(monster.x, 0, window.innerWidth);
         monster.y = Phaser.Math.Clamp(monster.y, 0, window.innerHeight);
 
+        // 🔽 HPテキストの位置をモンスターの真下に移動
+        if (hpText) {
+            hpText.setPosition(
+                monster.x - hpText.width / 2,
+                monster.y + monster.height / 2 + 10
+            );
+        }
+
         // モンスターの位置をサーバーに送信
         socket.send(JSON.stringify({
             type: 'moveMonster',
