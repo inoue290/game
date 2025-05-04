@@ -53,6 +53,7 @@ server.on('connection', (socket) => {
                 hp: monsterHP
             }));
         }
+        }
     });
 
     // 切断時
