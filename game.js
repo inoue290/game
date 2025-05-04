@@ -74,7 +74,7 @@ function create() {
     // モンスターHPのテキスト表示
     hpText = this.add.text(0, 0, 'Monster HP: ' + monsterHP, {
         fontSize: '32px',
-        fill: '#fff'
+        fill: '#ff0000'
     });
 
     // WebSocketからのメッセージ処理
