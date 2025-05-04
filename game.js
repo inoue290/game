@@ -89,6 +89,8 @@ function create() {
             }
             // ★ HPが0ならページ遷移
             if (monsterHP === 0) {
+                / モンスターのHPを初期値に戻す
+                monsterHP = 100; // 例：初期値100に戻す
                 window.location.href = 'https://www.yahoo.co.jp/'; // ←ここを遷移先に変更
             }
         }
