@@ -36,7 +36,17 @@ server.on('connection', (socket) => {
             // モンスターHPを全員に送信
              monsterHP -= 1;
             if (monsterHP < 0) monsterHP = 0;
-        
+            // モンスターのHPが0になったら初期値に戻す
+            if (monsterHP === 0) {
+                // 少し遅らせてリセットすることも可能
+                setTimeout(() => {
+                    monsterHP = 100; // 初期値に戻す
+                    broadcast(JSON.stringify({
+                        type: 'updateMonsterHP',
+                        hp: monsterHP
+                    }));
+                }, 1000); // 1秒後にリセット（演出を入れたい場合）
+            } else {
             // 全員にHPとエフェクトを送信
             broadcast(JSON.stringify({
                 type: 'updateMonsterHP',
