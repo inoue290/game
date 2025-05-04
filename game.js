@@ -87,8 +87,8 @@ function create() {
             if (hpText) {
                 hpText.setText('HP: ' + monsterHP);
             }
-            // ★ HPが0ならページ遷移
-            if (monsterHP === 0) {
+            // ★ HPが1ならページ遷移
+            if (monsterHP === 1) {
                 window.location.href = 'https://youtu.be/K2wwyMyu_58'; // ←ここを遷移先に変更
             }
         }
