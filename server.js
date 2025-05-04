@@ -45,7 +45,7 @@ server.on('connection', (socket) => {
                         type: 'updateMonsterHP',
                         hp: monsterHP
                     }));
-                }, 1000); // 1秒後にリセット（演出を入れたい場合）
+                }, 5000); // 5秒後にリセット（演出を入れたい場合）
             } else {
             // 全員にHPとエフェクトを送信
             broadcast(JSON.stringify({
