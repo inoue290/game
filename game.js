@@ -87,6 +87,10 @@ function create() {
             if (hpText) {
                 hpText.setText('HP: ' + monsterHP);
             }
+            // ★ HPが0ならページ遷移
+            if (monsterHP === 0) {
+                window.location.href = 'https://www.yahoo.co.jp/'; // ←ここを遷移先に変更
+            }
         }
 
         if (data.type === 'welcome') {
