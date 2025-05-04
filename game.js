@@ -85,7 +85,7 @@ function create() {
         if (data.type === 'updateMonsterHP') {
             monsterHP = data.hp;
             if (hpText) {
-                hpText.setText('Monster HP: ' + monsterHP);
+                hpText.setText('HP: ' + monsterHP);
             }
         }
 
