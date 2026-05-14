@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Photo Page</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+        }
+
+        .photo {
+            width: 95%;
+            max-width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            object-fit: cover;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            padding: 14px 40px;
+            font-size: 20px;
+            border: none;
+            border-radius: 12px;
+            background: #ff4444;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .back-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 写真 -->
+    <img src="assets/photo.jpg" alt="photo" class="photo">
+
+    <!-- 戻るボタン -->
+    <button class="back-button" onclick="history.back()">
+        戻る
+    </button>
+
+</body>
+</html>
